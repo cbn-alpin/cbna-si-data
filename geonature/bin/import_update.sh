@@ -135,23 +135,23 @@ function main() {
 function downloadDataArchive() {
     printMsg "Download CBNA data archive..."
 
-    if [[ ! -f "${raw_dir}/${cbna_filename_archive}" ]]; then
+    if [[ ! -f "${raw_dir}/${sialp_filename_archive}" ]]; then
         curl -X POST https://content.dropboxapi.com/2/files/download \
             --header "Authorization: Bearer ${cbna_dropbox_token}" \
-            --header "Dropbox-API-Arg: {\"path\": \"${cbna_dropbox_dir}/${cbna_filename_archive}\"}" \
-            > "${raw_dir}/${cbna_filename_archive}"
+            --header "Dropbox-API-Arg: {\"path\": \"${cbna_dropbox_dir}/${sialp_filename_archive}\"}" \
+            > "${raw_dir}/${sialp_filename_archive}"
      else
-        printVerbose "Archive file \"${cbna_filename_archive}\" already downloaded." ${Gra}
+        printVerbose "Archive file \"${sialp_filename_archive}\" already downloaded." ${Gra}
     fi
 }
 
 function extractArchive() {
     printMsg "Extract import data CSV files..."
 
-    if [[ -f "${raw_dir}/${cbna_filename_archive}" ]]; then
+    if [[ -f "${raw_dir}/${sialp_filename_archive}" ]]; then
         if [[ ! -f "${raw_dir}/${cbna_filename_synthese}" ]]; then
             cd "${raw_dir}/"
-            tar jxvf "${raw_dir}/${cbna_filename_archive}"
+            tar jxvf "${raw_dir}/${sialp_filename_archive}"
         else
             printVerbose "CSV files already extracted." ${Gra}
         fi
@@ -166,7 +166,7 @@ function prepareDb() {
 }
 
 function buildTablePrefix() {
-    table_prefix="${app_code}_${cbna_import_date//-/}"
+    table_prefix="${app_code}_${sialp_import_date//-/}"
 }
 
 function parseCsv() {
