@@ -1,4 +1,28 @@
-with
+--CREATE TEMP TABLE temp_det_org
+--AS
+--SELECT 
+--r.id_obs1,
+--r.id_org_obs1,
+--o.nom
+--FROM flore.releve r
+--JOIN referentiels.organisme o ON o.id_org = r.id_org_obs1 
+--WHERE
+--	(r.meta_id_groupe = 1
+--		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
+--	CREATE INDEX temp_det_org_id_obs1_idx ON temp_det_org USING btree(id_obs1);
+--ON COMMIT DROP ROWS
+--DROP TABLE temp_det_org;
+WITH
+--	det_org AS(
+--		SELECT 
+--			r.id_obs1,
+--			r.id_org_obs1,
+--			o.nom
+--		FROM flore.releve r
+--		JOIN referentiels.organisme o ON o.id_org = r.id_org_obs1 
+--		WHERE
+--		(r.meta_id_groupe = 1
+--			OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))),
 	evee AS (
     	SELECT rt.cd_ref
     	FROM referentiels.reglementation_taxon rt
@@ -18,7 +42,7 @@ with
         WHERE rt.id_reglementation ILIKE '%SENSI_AURA_%'
         GROUP BY rt.cd_ref, ("right"(rt.id_reglementation::text, 2))
         )
-select 
+SELECT 
 o.id_observation_sinp AS unique_id_sinp,
 r.id_releve_sinp AS unique_id_sinp_grp,
 o.id_observation AS source_id,
@@ -132,10 +156,36 @@ r.date_releve_fin AS date_max,
     END AS "validator", 
     NULL::text AS validation_comment,
     COALESCE(o.meta_date_valid, o.meta_date_maj) AS validation_date,
-flore.obs_plus_orga(r.id_releve, ', '::character varying) AS observers,
-concat_ws(' '::text, det.nom, det.prenom) AS determiner,
+--flore.obs_plus_orga(r.id_releve, ', '::character varying) AS observers,
+flore.generate_observers(r.id_releve, ' '::character varying) AS observers,  
+concat(
+	CASE 
+		WHEN o.id_det IS NOT NULL 
+			THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
+			ELSE 'INCONNU'
+	END,
+	CASE 
+		WHEN det.email IS NOT NULL AND det.email != '' 
+			THEN concat(' ','<', det.email,'>')
+		ELSE ''
+	END
+--	CASE  
+--		WHEN o.id_det IS NOT NULL
+--			THEN concat(' ', '(', COALESCE(tdo.nom, 'Inconnu'),')')  
+--		ELSE 
+--			CASE 
+--				WHEN o.id_det IS NOT NULL AND tdo.nom IS NULL
+--					THEN concat(' ','Indépendant.e')
+--			END
+--	END,
+--	CASE 
+--		WHEN o.id_det IS NOT NULL AND ovf.nom IS NULL
+--			THEN concat(' ','Indépendant.e')
+--	END
+	)
+AS determiner,
 NULL::text AS determination_date,
-NULL::text AS code_digitiser,
+r.meta_id_user_saisie AS code_digitiser,
 1 AS code_nomenclature_determination_method,
 r.comm_date AS comment_context,
 NULL::text AS comment_description,
@@ -175,11 +225,6 @@ jsonb_strip_nulls(
             	THEN jsonb_build_object('commune', c.nom_min)
             ELSE '{"commune": null}'
         END ||
---        CASE
---            WHEN r.lieudit  != '' 
---            	THEN jsonb_build_object('lieudit', r.lieudit)
---            ELSE '{"lieudit": null}'
---        END ||
         CASE
         	WHEN r.meta_id_groupe IS NOT NULL
         		THEN jsonb_build_object('metaIdGroupe', r.meta_id_groupe)
@@ -244,8 +289,8 @@ FROM flore.releve r
 	LEFT JOIN referentiels.biblio b ON r.id_biblio = b.id_biblio
 	LEFT JOIN referentiels.nombre_pieds np ON o.id_nombre_pieds = np.id_nombre_pieds
 	LEFT JOIN referentiels.observateur det ON det.id_obs = o.id_det
-    LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid
-    LEFT JOIN referentiels.organisme ov ON val.id_org = ov.id_org
+    LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid 
+    LEFT JOIN referentiels.organisme ov ON val.id_org = ov.id_org AND det.meta_id_groupe = ov.meta_id_groupe
     LEFT JOIN referentiels.organisme ovf ON r.id_org_f = ovf.id_org
     LEFT JOIN referentiels.catalog_dept cd ON cd.insee_dept = r.insee_dept AND cd.cd_ref = o.cd_ref
 	LEFT JOIN referentiels.commune c ON r.insee_comm = c.insee_comm
@@ -254,11 +299,14 @@ FROM flore.releve r
 	LEFT JOIN referentiels.herbier h ON o.id_herbier1 = h.id_herbier
     LEFT JOIN evee e ON e.cd_ref = o.cd_ref
     LEFT JOIN sensi_reg se ON se.cd_ref = o.cd_ref
+	--LEFT JOIN det_org dor ON dor.id_obs1 = r.id_obs1
+	--LEFT JOIN temp_det_org tdo ON tdo.id_obs1 = r.id_obs1
     LEFT JOIN sensi_dep sed ON sed.cd_ref = o.cd_ref AND sed.dept = r.insee_dept::TEXT AND sed.dept IN ('01', '26', '38', '73', '74')
 WHERE
 	(r.meta_id_groupe = 1
 		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
-limit 100
+--DROP TABLE temp_det_org;
+--limit 100
 
 
 
