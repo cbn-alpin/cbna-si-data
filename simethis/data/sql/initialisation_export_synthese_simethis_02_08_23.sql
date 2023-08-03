@@ -157,7 +157,7 @@ r.date_releve_fin AS date_max,
     NULL::text AS validation_comment,
     COALESCE(o.meta_date_valid, o.meta_date_maj) AS validation_date,
 --flore.obs_plus_orga(r.id_releve, ', '::character varying) AS observers,
-flore.generate_observers(r.id_releve, ' '::character varying) AS observers,  
+flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
 concat(
 	CASE 
 		WHEN o.id_det IS NOT NULL 
