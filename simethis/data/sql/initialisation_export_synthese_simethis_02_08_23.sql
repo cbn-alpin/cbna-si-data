@@ -1,3 +1,4 @@
+-- Requête export_synthese_initialisation
 --CREATE TEMP TABLE temp_det_org
 --AS
 --SELECT 
@@ -307,6 +308,7 @@ WHERE
 		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 --DROP TABLE temp_det_org;
 --limit 100
+;
 
 
 
