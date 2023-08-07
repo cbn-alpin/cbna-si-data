@@ -42,12 +42,37 @@ SELECT DISTINCT
 	END AS unique_id,
 	ov.nom AS name,
 	ov.adresse AS adress,
-	ov.cp AS postal_code,
-	ov.ville AS city,
-	ov.tel AS phone,
+--	ov.cp AS postal_code,
+	CASE
+		WHEN ov.cp IS NOT NULL
+			THEN ov.cp
+		ELSE NULL
+	END AS postal_code,
+--	ov.ville AS city,
+	CASE
+		WHEN ov.ville IS NOT NULL
+			THEN ov.ville
+		ELSE NULL
+	END AS city,
+--	ov.tel AS phone,
+	CASE
+		WHEN ov.tel IS NOT NULL
+			THEN ov.tel
+		ELSE NULL
+	END AS phone,
 	NULL::bpchar AS fax,
-	ov.email AS email,
-	ov.web AS url,
+--	ov.email AS email,
+	CASE
+		WHEN ov.email IS NOT NULL
+			THEN ov.email
+		ELSE NULL
+	END AS email,	
+--	ov.web AS url,
+	CASE
+		WHEN ov.web IS NOT NULL
+			THEN ov.web
+		ELSE NULL
+	END AS url,
 	NULL::bpchar AS logo_url,
 	jsonb_strip_nulls(
 		CASE
@@ -71,4 +96,3 @@ WHERE (r.meta_id_groupe = 1
 		AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 ;
 
- 
