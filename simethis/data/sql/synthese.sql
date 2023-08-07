@@ -177,10 +177,18 @@ WITH
 SELECT 
 o.id_observation_sinp AS unique_id_sinp,
 r.id_releve_sinp AS unique_id_sinp_grp,
-o.id_observation AS source_id,
-r.id_releve AS source_id_grp,
-'Simethis'::text AS code_source,
-mj.lib_jdd_court AS code_dataset,
+o.id_observation::varchar(25) AS source_id,
+r.id_releve::varchar(25) AS source_id_grp,
+--'Simethis'::text AS code_source,
+
+	CASE
+		WHEN r.meta_id_groupe = 1 THEN 'flora_cbna' -- cbna 
+		WHEN r.meta_id_groupe <>1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'simethis'
+		WHEN r.id_org_f IS NOT NULL AND r.id_org_f <> 2785 THEN 'fournisseurs' -- organisme qui fournit le relevé d'obs
+		ELSE NULL
+	END AS code_source,	
+	
+mj.lib_jdd_court::varchar(255) AS code_dataset,
 	CASE
     	WHEN r.id_precision = 'P'::bpchar OR r.id_releve_methode = 10 THEN 'St'::TEXT -- St : Stationnel
         WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'C'::bpchar]) THEN 'In'::TEXT -- In : Inventoriel
@@ -202,11 +210,11 @@ rm.lib AS grp_method,
         WHEN o.id_herbier1 > 0 THEN '1'::TEXT -- 1 : Oui
         ELSE '2'::TEXT -- 1 : Oui
     END AS code_nomenclature_exist_proof,
-o.valid_reg AS code_nomenclature_valid_status,
+o.valid_reg::varchar(25) AS code_nomenclature_valid_status,
 	CASE
     	WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) THEN 5
     ELSE COALESCE(r.sinp_difnivprec::integer, 0)
-    END AS code_nomenclature_diffusion_level,
+    END::varchar(25) AS code_nomenclature_diffusion_level,
 '0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
 	CASE
     	WHEN o.sexe = 'M'::bpchar THEN '3'::TEXT -- 3 : Mâle
@@ -219,7 +227,7 @@ o.valid_reg AS code_nomenclature_valid_status,
 	CASE
     	WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN 1
         ELSE 0
-    END AS code_nomenclature_sensitivity,
+    END::varchar(25) AS code_nomenclature_sensitivity,
 'Pr'::text AS code_nomenclature_observation_status, -- Pr : Présent 
 NULL::character varying(25) AS code_nomenclature_blurring,
 	CASE
@@ -256,10 +264,15 @@ COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
 COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
 o.cd_ref AS cd_nom,
 NULL::integer AS cd_hab,
-o.nom_taxon AS nom_cite,
+--o.nom_taxon::varchar(1000) AS nom_cite,
+CASE
+	WHEN o.nom_taxon IS NOT NULL
+		THEN o.nom_taxon::varchar(1000)
+	ELSE ''
+END AS nom_cite,
 NULL::text AS digital_proof,
 NULL::text AS non_digital_proof,
-LEAST(NULLIF(r.alti_inf, 0), r.alti_calc) AS altitude_min,
+LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
 GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
 NULL::text AS depth_min,
 NULL::text AS depth_max,
@@ -267,7 +280,7 @@ NULL::text AS depth_max,
     	WHEN r.lieudit  != '' 
         	THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
        ELSE '{"lieudit": null}'
-    END AS place_name,
+    END::varchar(500) AS place_name,
 st_geomfromtext(
 	CASE
             WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154))
@@ -280,14 +293,14 @@ st_geomfromtext(
             WHEN 'T'::bpchar THEN 800
             ELSE NULL::integer
         END) AS "precision",  
-r.date_releve_deb AS date_min,
-r.date_releve_fin AS date_max,
+r.date_releve_deb::timestamp AS date_min,
+r.date_releve_fin::timestamp AS date_max,
 	CASE
     	WHEN o.meta_type_valid::text = 'a_v1'::text THEN NULL::text
         ELSE concat(concat_ws(' '::text, val.nom, val.prenom), ' (', COALESCE(ov.abb, ov.nom, 'Inconnu'::character varying), ')')
     END AS "validator", 
     NULL::text AS validation_comment,
-    COALESCE(o.meta_date_valid, o.meta_date_maj) AS validation_date,
+    COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
 --flore.obs_plus_orga(r.id_releve, ', '::character varying) AS observers,
 flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
 concat(
@@ -316,9 +329,14 @@ concat(
 --	END
 	)
 AS determiner,
-NULL::text AS determination_date,
-r.meta_id_user_saisie AS code_digitiser,
-1 AS code_nomenclature_determination_method,
+NULL::timestamp AS determination_date,
+r.meta_id_user_saisie::varchar(50) AS code_digitiser,
+1::varchar(25) AS code_nomenclature_determination_method,
+--CASE
+--	WHEN r.id_releve_methode  IS NOT NULL
+--		THEN r.id_releve_methode::varchar(25)
+--	ELSE NULL
+--END AS code_nomenclature_determination_method,
 r.comm_date AS comment_context,
 NULL::text AS comment_description,
 jsonb_strip_nulls(
@@ -411,8 +429,8 @@ jsonb_strip_nulls(
         	ELSE '{"taxType": null}'
         END::jsonb)
 AS additionnal_data,
-r.meta_date_saisie AS meta_create_date,
-GREATEST(o.meta_date_maj, r.meta_date_maj) AS meta_update_date,
+r.meta_date_saisie::timestamp AS meta_create_date,
+GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
 'I' AS meta_last_action 
 FROM flore.releve r
 	JOIN flore.observation o ON r.id_releve = o.id_releve
@@ -440,6 +458,11 @@ WHERE
 --DROP TABLE temp_det_org;
 --limit 100
 ;
+
+
+
+
+
 
 
 
