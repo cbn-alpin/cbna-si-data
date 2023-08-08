@@ -179,15 +179,12 @@ o.id_observation_sinp AS unique_id_sinp,
 r.id_releve_sinp AS unique_id_sinp_grp,
 o.id_observation::varchar(25) AS source_id,
 r.id_releve::varchar(25) AS source_id_grp,
---'Simethis'::text AS code_source,
-
 	CASE
-		WHEN r.meta_id_groupe = 1 THEN 'flora_cbna' -- cbna 
-		WHEN r.meta_id_groupe <>1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'simethis'
-		WHEN r.id_org_f IS NOT NULL AND r.id_org_f <> 2785 THEN 'fournisseurs' -- organisme qui fournit le relevé d'obs
+		WHEN r.id_org_f = 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'flora_cbna'
+		WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
+		WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
 		ELSE NULL
-	END AS code_source,	
-	
+	END AS code_source,		
 mj.lib_jdd_court::varchar(255) AS code_dataset,
 	CASE
     	WHEN r.id_precision = 'P'::bpchar OR r.id_releve_methode = 10 THEN 'St'::TEXT -- St : Stationnel
@@ -332,11 +329,6 @@ AS determiner,
 NULL::timestamp AS determination_date,
 r.meta_id_user_saisie::varchar(50) AS code_digitiser,
 1::varchar(25) AS code_nomenclature_determination_method,
---CASE
---	WHEN r.id_releve_methode  IS NOT NULL
---		THEN r.id_releve_methode::varchar(25)
---	ELSE NULL
---END AS code_nomenclature_determination_method,
 r.comm_date AS comment_context,
 NULL::text AS comment_description,
 jsonb_strip_nulls(
@@ -458,6 +450,12 @@ WHERE
 --DROP TABLE temp_det_org;
 --limit 100
 ;
+
+
+
+
+
+
 
 
 
