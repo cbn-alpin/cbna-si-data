@@ -1,74 +1,46 @@
---WITH unique_organism AS (
---    SELECT
---        r.id_org_f AS id_org
---    FROM flore.releve r
---    
---    UNION
---    
---    SELECT
---        r.id_org_obs1 AS id_org
---    FROM flore.releve r
---
---    UNION
---    
---    SELECT
---        r.id_org_obs2 AS id_org
---    FROM flore.releve r
---    
---    UNION
---    
---    SELECT
---        r.id_org_obs3 AS id_org
---    FROM flore.releve r
---    
---    UNION
---    
---    SELECT
---        r.id_org_obs4 AS id_org
---    FROM flore.releve r
---    
---    UNION
---    
---    SELECT
---        r.id_org_obs5 AS id_org
---    FROM flore.releve r
---)
-
 SELECT DISTINCT
-	CASE 
-		WHEN ov.id_org IS NOT NULL
-		THEN COALESCE (ov.uuid_national, ov.permid::TEXT)
-		ELSE NULL
-	END AS unique_id,
+	COALESCE (
+		(CASE
+			WHEN ov.uuid_national ~* '^\s*$'
+			THEN NULL 
+			WHEN ov.uuid_national IS NOT NULL 
+			THEN ov.uuid_national
+		 END), ov.permid::varchar)
+	AS unique_id,
 	ov.nom AS name,
 	ov.adresse AS adress,
---	ov.cp AS postal_code,
 	CASE
+		WHEN ov.cp ~* '^\s*$'
+			THEN NULL
 		WHEN ov.cp IS NOT NULL
 			THEN ov.cp
 		ELSE NULL
 	END AS postal_code,
---	ov.ville AS city,
 	CASE
+		WHEN ov.ville ~* '^\s*$'
+			THEN NULL
 		WHEN ov.ville IS NOT NULL
 			THEN ov.ville
 		ELSE NULL
 	END AS city,
---	ov.tel AS phone,
 	CASE
-		WHEN ov.tel IS NOT NULL
+		WHEN ov.tel ~* '^\s*$'
+			THEN NULL
+		WHEN ov.tel IS NOT NULL 
 			THEN ov.tel
 		ELSE NULL
 	END AS phone,
 	NULL::bpchar AS fax,
---	ov.email AS email,
 	CASE
+		WHEN ov.email ~* '^\s*$'
+			THEN NULL
 		WHEN ov.email IS NOT NULL
 			THEN ov.email
 		ELSE NULL
 	END AS email,	
---	ov.web AS url,
 	CASE
+		WHEN ov.web ~* '^\s*$'
+			THEN NULL
 		WHEN ov.web IS NOT NULL
 			THEN ov.web
 		ELSE NULL
@@ -85,14 +57,10 @@ SELECT DISTINCT
 	ov.meta_date_maj::timestamp AS meta_update_date,
 	'I' AS meta_last_action
 FROM referentiels.organisme ov
---JOIN unique_organism uo ON ov.id_org = uo.id_org
---JOIN flore.releve r ON id_org_f = uo.id_org
-	JOIN flore.releve r ON r.id_org_f = ov.id_org 
-		OR r.id_org_obs1 = ov.id_org OR r.id_org_obs2 = ov.id_org OR r.id_org_obs3 = ov.id_org OR r.id_org_obs4 = ov.id_org OR r.id_org_obs5 = ov.id_org
---		AND r.meta_id_groupe = ov.meta_id_groupe 
---	LEFT JOIN flore.releve rgrp ON rgrp.meta_id_groupe = ov.meta_id_groupe 
+JOIN flore.releve r ON r.id_org_f = ov.id_org 
+	OR r.id_org_obs1 = ov.id_org OR r.id_org_obs2 = ov.id_org OR r.id_org_obs3 = ov.id_org OR r.id_org_obs4 = ov.id_org OR r.id_org_obs5 = ov.id_org
 WHERE (r.meta_id_groupe = 1
-		OR  (r.meta_id_groupe <> 1
-		AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
+	OR  (r.meta_id_groupe <> 1
+	AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 ;
 
