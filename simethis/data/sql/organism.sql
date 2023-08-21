@@ -1,3 +1,4 @@
+--COPY (
 SELECT DISTINCT
 	COALESCE (
 		(CASE
@@ -9,48 +10,27 @@ SELECT DISTINCT
 	AS unique_id,
 	ov.nom AS name,
 	ov.adresse AS adress,
-	CASE
-		WHEN ov.cp ~* '^\s*$'
-			THEN NULL
-		WHEN ov.cp IS NOT NULL
-			THEN ov.cp
-		ELSE NULL
-	END AS postal_code,
-	CASE
-		WHEN ov.ville ~* '^\s*$'
-			THEN NULL
-		WHEN ov.ville IS NOT NULL
-			THEN ov.ville
-		ELSE NULL
-	END AS city,
-	CASE
-		WHEN ov.tel ~* '^\s*$'
-			THEN NULL
-		WHEN ov.tel IS NOT NULL 
-			THEN ov.tel
-		ELSE NULL
-	END AS phone,
+	public.delete_space(ov.cp) AS postal_code,
+	public.delete_space(ov.ville) AS city,
+	public.delete_space(ov.tel) AS phone,
 	NULL::bpchar AS fax,
-	CASE
-		WHEN ov.email ~* '^\s*$'
-			THEN NULL
-		WHEN ov.email IS NOT NULL
-			THEN ov.email
-		ELSE NULL
-	END AS email,	
-	CASE
-		WHEN ov.web ~* '^\s*$'
-			THEN NULL
-		WHEN ov.web IS NOT NULL
-			THEN ov.web
-		ELSE NULL
-	END AS url,
+	public.delete_space(ov.email) AS email,
+	public.delete_space(ov.web) AS url,
 	NULL::bpchar AS logo_url,
 	jsonb_strip_nulls(
 		CASE
         	WHEN ov.id_org IS NOT NULL
         		THEN jsonb_build_object('infoSup',
-        			jsonb_build_object('idOrg', ov.id_org, 'code', ov.code, 'pays', ov.pays, 'sinpDspublique', ov.sinp_dspublique, 'metaIdGroupe', ov.meta_id_groupe, 'comm', ov.comm, 'permid', ov.permid, 'fichier1', ov.fichier1))
+        			jsonb_build_object(
+        				'idOrg', ov.id_org,
+        				'code', ov.code,
+        				'pays', ov.pays,
+        				'sinpDspublique', ov.sinp_dspublique,
+        				'metaIdGroupe', ov.meta_id_groupe,
+        				'comm', ov.comm,
+        				'permid', ov.permid,
+        				'fichier1', ov.fichier1)
+        				)
         	ELSE jsonb_build_object('infoSup', null)
         END::jsonb) AS additional_data,	
 	ov.meta_date_saisie::timestamp AS meta_create_date,
@@ -62,5 +42,7 @@ JOIN flore.releve r ON r.id_org_f = ov.id_org
 WHERE (r.meta_id_groupe = 1
 	OR  (r.meta_id_groupe <> 1
 	AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
+--) TO stdout
+--WITH (format csv, header, delimiter E'\t')
 ;
 
