@@ -130,6 +130,8 @@ $function$
 
 
 -- Requête export_synthese_initialisation
+
+--COPY (
 --CREATE TEMP TABLE temp_det_org
 --AS
 --SELECT 
@@ -261,7 +263,6 @@ COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
 COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
 o.cd_ref AS cd_nom,
 NULL::integer AS cd_hab,
---o.nom_taxon::varchar(1000) AS nom_cite,
 CASE
 	WHEN o.nom_taxon IS NOT NULL
 		THEN o.nom_taxon::varchar(1000)
@@ -278,7 +279,8 @@ NULL::text AS depth_max,
         	THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
        ELSE '{"lieudit": null}'
     END::varchar(500) AS place_name,
-st_geomfromtext(
+	st_geomfromtext(
+--  st_geomfromewkt(  
 	CASE
             WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154))
             WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
@@ -298,7 +300,6 @@ r.date_releve_fin::timestamp AS date_max,
     END AS "validator", 
     NULL::text AS validation_comment,
     COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
---flore.obs_plus_orga(r.id_releve, ', '::character varying) AS observers,
 flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
 concat(
 	CASE 
@@ -327,7 +328,7 @@ concat(
 	)
 AS determiner,
 NULL::timestamp AS determination_date,
-r.meta_id_user_saisie::varchar(50) AS code_digitiser,
+dig.permid::varchar(50) AS code_digitiser,
 1::varchar(25) AS code_nomenclature_determination_method,
 r.comm_date AS comment_context,
 NULL::text AS comment_description,
@@ -337,81 +338,29 @@ jsonb_strip_nulls(
         		THEN jsonb_build_object('fournisseur', jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
         	ELSE jsonb_build_object('fournisseur', null)
         END ||     
-        CASE
-        	WHEN r.id_obs1 IS NOT NULL
-        		THEN jsonb_build_object('idObs1', r.id_obs1)-- a voir fonction obs_plus_orga
-        	ELSE '{"idObs1": null}'
-        END ||
-        CASE
-        	WHEN r.id_obs2 IS NOT NULL 
-        		THEN jsonb_build_object('idObs2', r.id_obs2)
-        	ELSE '{"idObs2": null}'
-        END ||
-        CASE
-        	WHEN r.id_obs3 IS NOT NULL 
-        		THEN jsonb_build_object('idObs3', r.id_obs3)
-        	ELSE '{"idObs3": null}'	
-        END ||
-        CASE
-        	WHEN r.id_obs4 IS NOT NULL
-        		THEN jsonb_build_object('idObs4', r.id_obs4)
-        	ELSE '{"idObs4": null}'
-        END ||
-        CASE
-        	WHEN r.id_obs5 IS NOT NULL
-        		THEN jsonb_build_object('idObs5', r.id_obs5)
-        	ELSE '{"idObs5": null}'
-        END ||       
-		CASE
-            WHEN c.nom_min != '' 
-            	THEN jsonb_build_object('commune', c.nom_min)
-            ELSE '{"commune": null}'
-        END ||
-        CASE
-        	WHEN r.meta_id_groupe IS NOT NULL
-        		THEN jsonb_build_object('metaIdGroupe', r.meta_id_groupe)
-        	ELSE '{"metaIdGroupe": null}'
-        END ||
-        CASE
-        	WHEN r.meta_id_prog IS NOT NULL 
-        		THEN jsonb_build_object('metaIdProg', r.meta_id_prog)
-        	ELSE '{"metaIdProg": null}'
-        END ||
-        CASE
-        	WHEN r.insee_reg != ''
-        		THEN jsonb_build_object('inseeReg', r.insee_reg)
-        	ELSE '{"inseeReg": null}'
-        END ||
+        public.build_simple_json_object('idObs1', r.id_obs1) ||
+        public.build_simple_json_object('idObs2', r.id_obs2) ||
+        public.build_simple_json_object('idObs3', r.id_obs3) ||
+        public.build_simple_json_object('idObs4', r.id_obs4) ||
+	    public.build_simple_json_object('idObs5', r.id_obs5) ||  
+        public.build_simple_json_object('commune', c.nom_min) ||
+        public.build_simple_json_object('metaIdGroupe', r.meta_id_groupe) ||
+        public.build_simple_json_object('metaIdProg', r.meta_id_prog) ||
+        public.build_simple_json_object('inseeReg', r.insee_reg) ||
         CASE
 	        WHEN h.nom != ''
 	        THEN jsonb_build_object('herbier', jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
    			else jsonb_build_object('herbier', null)    			
         END ||
-        CASE
-        	WHEN r.code_perso != ''
-        		THEN jsonb_build_object('codePerso', r.code_perso)
-        	ELSE '{"codePerso": null}'
-        END ||
-        CASE
-        	WHEN r.code_gps IS NOT NULL
-        		THEN jsonb_build_object('codeGps', r.code_gps)
-        	ELSE '{"codeGps": null}'
-        END ||
+        public.build_simple_json_object('codePerso', r.code_perso) ||
+        public.build_simple_json_object('codeGps', r.code_gps) ||
         CASE
         	WHEN r.meta_id_prog IS NOT NULL
         		THEN jsonb_build_object('metaNomProg', p.nom)
         	ELSE '{"metaNomProg": null}'
         END ||
-        CASE
-        	WHEN r.meta_id_user_saisie IS NOT NULL
-        		THEN jsonb_build_object('metaIdUserSaisie', r.meta_id_user_saisie)
-        	ELSE '{"metaIdUserSaisie": null}'
-        END || 
-        CASE
-        	WHEN r.sinp_dspublique IS NOT NULL
-        		THEN jsonb_build_object('sinpDspublique', r.sinp_dspublique)
-        	ELSE '{"sinpDspublique": null}'
-        END ||
+ 	    public.build_simple_json_object('metaIdUserSaisie', r.meta_id_user_saisie) ||
+        public.build_simple_json_object('sinpDspublique', r.sinp_dspublique) ||        
         CASE t.tax_type
         		WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
         		WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT 
@@ -419,7 +368,9 @@ jsonb_strip_nulls(
             	WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
             	WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT 
         	ELSE '{"taxType": null}'
-        END::jsonb)
+        END::jsonb||
+        jsonb_build_object('cd_nom', o.cd_nom)
+        )
 AS additionnal_data,
 r.meta_date_saisie::timestamp AS meta_create_date,
 GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
@@ -431,7 +382,8 @@ FROM flore.releve r
 	LEFT JOIN referentiels.biblio b ON r.id_biblio = b.id_biblio
 	LEFT JOIN referentiels.nombre_pieds np ON o.id_nombre_pieds = np.id_nombre_pieds
 	LEFT JOIN referentiels.observateur det ON det.id_obs = o.id_det
-    LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid 
+    LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid
+    LEFT JOIN applications.utilisateur dig ON dig.id_user = r.meta_id_user_saisie
     LEFT JOIN referentiels.organisme ov ON val.id_org = ov.id_org AND det.meta_id_groupe = ov.meta_id_groupe
     LEFT JOIN referentiels.organisme ovf ON r.id_org_f = ovf.id_org
     LEFT JOIN referentiels.catalog_dept cd ON cd.insee_dept = r.insee_dept AND cd.cd_ref = o.cd_ref
@@ -449,7 +401,15 @@ WHERE
 		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 --DROP TABLE temp_det_org;
 --limit 100
+--) TO stdout
+--WITH (format csv, header, delimiter E'\t')
 ;
+
+
+
+
+
+
 
 
 
