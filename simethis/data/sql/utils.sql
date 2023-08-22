@@ -1,4 +1,4 @@
--- function check cbna agent uuid/observers and generate observers uuid when uuid is null
+-- function check cbna agent uuid/observers and generate observers uuid when uuid is null. Return a unique_id uuid
 
 CREATE OR REPLACE FUNCTION flore.check_cbna_agent(observer_id integer, date_releve date)
  RETURNS uuid
@@ -30,3 +30,27 @@ AS $function$
 	END;
 $function$
 ; 
+
+-- function build a simple json object with a CASE WHEN. Return a json object
+
+CREATE OR REPLACE FUNCTION public.build_simple_json_object(fieldkey character varying, fieldvalue anyelement)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+	DECLARE
+		jsonObject jsonb;
+	
+	BEGIN 
+   		SELECT 
+			CASE 
+		    	WHEN (pg_typeof(fieldValue) = 'integer'::regtype AND fieldValue IS NOT NULL) OR (pg_typeof(fieldValue) = 'character varying'::regtype AND fieldValue::varchar != '')
+		    		THEN jsonb_build_object(fieldKey, fieldValue)
+		    	ELSE jsonb_build_object(fieldKey, NULL)
+		    END::jsonb INTO jsonObject;
+		
+		RETURN jsonObject;
+	END;
+$function$
+;
+
