@@ -29,9 +29,14 @@ SELECT DISTINCT
         				'metaIdGroupe', ov.meta_id_groupe,
         				'comm', ov.comm,
         				'permid', ov.permid,
-        				'fichier1', ov.fichier1)
+        				'fichier1', ov.fichier1)				
         				)
         	ELSE jsonb_build_object('infoSup', null)
+        	END ||
+        CASE
+			WHEN ov.uuid_national ~* '^\s*$' OR  ov.uuid_national IS NULL 
+			THEN jsonb_build_object('is_uuid_national', false)
+			ELSE jsonb_build_object('is_uuid_national', TRUE)
         END::jsonb) AS additional_data,	
 	ov.meta_date_saisie::timestamp AS meta_create_date,
 	ov.meta_date_maj::timestamp AS meta_update_date,
