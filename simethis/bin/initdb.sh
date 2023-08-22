@@ -26,7 +26,11 @@ psql si_cbn -c "create extension postgres_fdw;"
 psql si_cbn -c "create extension intarray;"
 psql si_cbn -c "create extension ogr_fdw;"
 echo 'all extensions created'
-pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/flore_20230516.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/flore_20230516_pgrestore.log"
+pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/flore_20230630.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/flore_20230630_pgrestore.log"
+pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/vegetation_20230630.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/vegetation_20230630_pgrestore.log"
+pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/sinp_20230629.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/sinp_20230629_pgrestore.log"
+pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/referentiels_20230630.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/referentiels_20230630_pgrestore.log"
+pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/applications_20230630.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/applications_20230630_pgrestore.log"
 echo 'database flore simethis restored'
 
 
