@@ -1,6 +1,6 @@
---COPY ( 
+COPY ( 
 
--- Création d'une table, qui sera supprimée en fin de script, des agents du CBNA des services Conservation et Connaissance
+-- Création d'une table, laquelle sera supprimée en fin de script, des agents du CBNA des services Conservation et Connaissance
 CREATE TABLE flore.cbna_agent(
 	gid serial PRIMARY KEY,
 	uuid uuid,
@@ -47,8 +47,7 @@ SELECT DISTINCT ON (observers.unique_id) *
 FROM (  	
 
 	SELECT
---	 	concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', r.id_obs1)))::uuid AS unique_id, -- obs1
-		flore.check_cbna_agent(r.id_obs1, r.date_releve_deb) AS unique_id,
+		flore.check_cbna_agent(r.id_obs1, r.date_releve_deb) AS unique_id, --obs1
 	 	NULL AS identifier,
 	    public.delete_space(o.prenom) AS firstname,
 	    o.nom AS "name",
@@ -68,8 +67,7 @@ FROM (
 	UNION
 	
 	SELECT
---	    concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', r.id_obs2)))::uuid AS unique_id, --obs2
-		flore.check_cbna_agent(r.id_obs2, r.date_releve_deb ) AS unique_id,
+		flore.check_cbna_agent(r.id_obs2, r.date_releve_deb ) AS unique_id, --obs2
 	 	NULL AS identifier,
 	    public.delete_space(o.prenom) AS firstname,
 	    o.nom AS "name",
@@ -89,8 +87,7 @@ FROM (
 	UNION
 	
 	SELECT
---	 	concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', r.id_obs3)))::uuid AS unique_id, --obs3
-		flore.check_cbna_agent(r.id_obs3, r.date_releve_deb) AS unique_id,
+		flore.check_cbna_agent(r.id_obs3, r.date_releve_deb) AS unique_id, --obs3
 	 	NULL AS identifier,
 	    public.delete_space(o.prenom) AS firstname,
 	    o.nom AS "name",
@@ -110,8 +107,7 @@ FROM (
 	UNION
 	
 	SELECT
---	 	concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', r.id_obs4)))::uuid AS unique_id, --obs4
-		flore.check_cbna_agent(r.id_obs4, r.date_releve_deb) AS unique_id,
+		flore.check_cbna_agent(r.id_obs4, r.date_releve_deb) AS unique_id, --obs4
 	 	NULL AS identifier,
         public.delete_space(o.prenom) AS firstname,
 	    o.nom AS "name",
@@ -131,8 +127,7 @@ FROM (
 	UNION
 	
 	SELECT
---	 	concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', r.id_obs5)))::uuid AS unique_id, --obs5
-		flore.check_cbna_agent(r.id_obs5, r.date_releve_deb) AS unique_id,
+		flore.check_cbna_agent(r.id_obs5, r.date_releve_deb) AS unique_id, --obs5
 	 	NULL AS identifier,
 	    public.delete_space(o.prenom) AS firstname,
 	    o.nom AS "name",
@@ -201,8 +196,8 @@ WHERE
 	r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')
 )
 )
---) TO stdout
---WITH (format csv, header, delimiter E'\t')			
+) TO stdout
+WITH (format csv, header, delimiter E'\t')			
 ;
 
 DROP TABLE IF EXISTS flore.cbna_agent;
