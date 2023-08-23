@@ -1,5 +1,3 @@
-COPY ( 
-
 -- Création d'une table, laquelle sera supprimée en fin de script, des agents du CBNA des services Conservation et Connaissance
 CREATE TABLE flore.cbna_agent(
 	gid serial PRIMARY KEY,
@@ -22,6 +20,7 @@ SET uuid = u.permid
 FROM applications.utilisateur AS u
 WHERE u.id_groupe = 1 AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name)) AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name));
 
+COPY (
 (
 WITH
 -- CTE Relevés d'observations produites sur le territoire du CBNA, observateurs du territoire du CBNA
