@@ -1,8 +1,6 @@
+COPY (
 SELECT
 	mc.uuid_ca AS unique_id,
---	mc.id_ca_test,
---	mj.id_jdd_test,
---	r.id_releve_test,
 	mc.lib_ca AS "name",
 	mc.desc_ca AS "desc",
 	mrter.cd_nomenclature AS code_nomenclature_territorial_level,
@@ -16,10 +14,9 @@ SELECT
 	mc.date_lancement::date AS start_date,
 	mc.date_cloture::date AS end_date,
 	ARRAY[mrobj.cd_nomenclature] AS cor_objectifs,
-	ARRAY[1]::TEXT AS cor_voletsinp,--
---	ARRAY[ARRAY[o.nom, '1'::CHARACTER VARYING]]::TEXT AS cor_actors_organism, --'1' : Principal, contact principal
+	ARRAY[1]::TEXT AS cor_voletsinp, --1 Terre
 	CASE
-            WHEN mc.acteur_principal IS NOT NULL THEN ARRAY[ARRAY[o.nom, '1'::character varying]]
+            WHEN mc.acteur_principal IS NOT NULL THEN ARRAY[ARRAY[o.nom, '1'::character varying]] -- '1' contact principal
             ELSE NULL::character varying[]
         END AS cor_actors_organism,
 	ARRAY[ARRAY[split_part(u.email::TEXT, '@'::TEXT, 1), '1'::TEXT]] AS cor_actors_user,
@@ -39,8 +36,10 @@ FROM sinp.metadata_ca mc
  WHERE (r.meta_id_groupe = 1
 		OR  (r.meta_id_groupe <> 1
 		AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
+) TO stdout
+WITH (format csv, header, delimiter E'\t')
 ;
 	
 	
 	
-	 
+	
