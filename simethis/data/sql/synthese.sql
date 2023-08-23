@@ -131,7 +131,7 @@ $function$
 
 -- Requête export_synthese_initialisation
 
---COPY (
+COPY (
 --CREATE TEMP TABLE temp_det_org
 --AS
 --SELECT 
@@ -312,19 +312,6 @@ concat(
 			THEN concat(' ','<', det.email,'>')
 		ELSE ''
 	END
---	CASE  
---		WHEN o.id_det IS NOT NULL
---			THEN concat(' ', '(', COALESCE(tdo.nom, 'Inconnu'),')')  
---		ELSE 
---			CASE 
---				WHEN o.id_det IS NOT NULL AND tdo.nom IS NULL
---					THEN concat(' ','Indépendant.e')
---			END
---	END,
---	CASE 
---		WHEN o.id_det IS NOT NULL AND ovf.nom IS NULL
---			THEN concat(' ','Indépendant.e')
---	END
 	)
 AS determiner,
 NULL::timestamp AS determination_date,
@@ -401,8 +388,8 @@ WHERE
 		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 --DROP TABLE temp_det_org;
 --limit 100
---) TO stdout
---WITH (format csv, header, delimiter E'\t')
+) TO stdout
+WITH (format csv, header, delimiter E'\t')
 ;
 
 
