@@ -1,4 +1,4 @@
---COPY (
+COPY (
 SELECT DISTINCT
 	COALESCE (
 		(CASE
@@ -47,7 +47,7 @@ JOIN flore.releve r ON r.id_org_f = ov.id_org
 WHERE (r.meta_id_groupe = 1
 	OR  (r.meta_id_groupe <> 1
 	AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
---) TO stdout
---WITH (format csv, header, delimiter E'\t')
+) TO stdout
+WITH (format csv, header, delimiter E'\t')
 ;
 
