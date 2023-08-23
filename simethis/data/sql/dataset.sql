@@ -1,12 +1,11 @@
+COPY (
 WITH 
 	list_jdd AS (
          SELECT r.id_jdd
          FROM flore.releve r
---          WHERE r.insee_dept = ANY (ARRAY['04'::bpchar, '05'::bpchar,])
          WHERE
 			(r.meta_id_groupe = 1
 				OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
---          GROUP BY r.id_jdd
 	)
 --        date_der_exp AS (
 --         SELECT max(suivi_export_synth.date_export) AS date_der_exp
@@ -21,15 +20,9 @@ WITH
  SELECT
  	jd.uuid_jdd AS unique_id_sinp,
     concat(ca.id_ca, ' - ', ca.lib_ca)::varchar(255) AS code_acquisition_framework,
-    jd.lib_jdd AS name,
+    jd.lib_jdd AS "name",
     jd.lib_jdd_court AS shortname,
     jd.desc_jdd AS "desc",
---    td.cd_nomenclature AS code_nomenclature_data_type
---    CASE
---    	WHEN td.cd_nomenclature IS NOT NULL 
---    		THEN td.cd_nomenclature
---    	ELSE '1' -- Occurences de taxons
---    END AS code_nomenclature_data_type,
     CASE
     	WHEN jd.type_donnees IS NOT NULL
     		THEN td.cd_nomenclature
@@ -38,7 +31,6 @@ WITH
     NULL::text AS keywords,
     jd.dom_marin AS marine_domain,
     jd.dom_terrestre AS terrestrial_domain,
---    obj.cd_nomenclature AS code_nomenclature_dataset_objectif
     CASE 
     	WHEN obj.cd_nomenclature IS NOT NULL
     		THEN obj.cd_nomenclature::varchar(25)
@@ -48,19 +40,16 @@ WITH
     NULL::double precision AS bbox_est,
     NULL::double precision AS bbox_south,
     NULL::double precision AS bbox_north,
---    mc.cd_nomenclature AS code_nomenclature_collecting_method,
     CASE 
     	WHEN mc.cd_nomenclature IS NOT NULL
     		THEN mc.cd_nomenclature
     	ELSE '1' -- Observation directe
     END code_nomenclature_collecting_method,    
---    ori.cd_nomenclature AS code_nomenclature_data_origin,
     CASE
     	WHEN ori.cd_nomenclature IS NOT NULL
     		THEN ori.cd_nomenclature
     	ELSE 'NSP' -- Ne Sait Pas
     END AS code_nomenclature_data_origin,
---    sta.cd_nomenclature AS code_nomenclature_source_status,
     CASE
     	WHEN sta.cd_nomenclature IS NOT NULL
     		THEN sta.cd_nomenclature
@@ -70,11 +59,11 @@ WITH
     ARRAY[ARRAY[ter.cd_nomenclature, 'Métropole'::character varying]]::TEXT AS cor_territory,
     (ARRAY[ARRAY[pri.uuid_national, '1'::character varying]]::TEXT ||
         CASE
-            WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[pro.uuid_national, '6'::character varying]
+            WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[pro.uuid_national, '6'::character varying] -- '6' Producteur
             ELSE NULL::character varying[]
         END) ||
         CASE
-            WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[fi.uuid_national, '2'::character varying]
+            WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[fi.uuid_national, '2'::character varying] -- '2' Financeur
             ELSE NULL::character varying[]
         END AS cor_actors_organism,
     ARRAY[ARRAY[split_part(u.email::text, '@'::text, 1), '1'::text]] AS cor_actors_user,
@@ -105,7 +94,9 @@ WITH
      LEFT JOIN applications.utilisateur u ON u.id_user = ca.id_user_creation_ca
 --     LEFT JOIN suivi_uuid su ON jd.uuid_jdd = su.permid,
 --    date_der_exp
---  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL;
-    ;
+--  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
+) TO stdout
+WITH (format csv, header, delimiter E'\t')
+;
      
-      
+     
