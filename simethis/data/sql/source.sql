@@ -1,3 +1,4 @@
+COPY( 
 WITH
 	others_cbn AS ( 
 	SELECT DISTINCT ON (o.nom)
@@ -53,7 +54,9 @@ SELECT
     '2021-01-28'::timestamp AS meta_create_date,
     '2023-04-21'::timestamp AS meta_update_date,
     'I'::character(1) AS meta_last_action
-    
+) TO stdout
+WITH (format csv, header, delimiter E'\t')
+;    
     
     
    
