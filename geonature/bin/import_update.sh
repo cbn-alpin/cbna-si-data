@@ -74,6 +74,15 @@ function main() {
 
     buildTablePrefix
 
+    executeCopy "taxref rang"
+    displayStats "taxref rang"
+    executeUpgradeScript "taxref rang" "insert"
+
+    executeCopy "taxref"
+    displayStats "taxref"
+    executeUpgradeScript "taxref" "insert"
+    executeUpgradeScript "taxref" "update"
+
     parseCsv "source" "so"
     executeCopy "source"
     displayStats "source"
