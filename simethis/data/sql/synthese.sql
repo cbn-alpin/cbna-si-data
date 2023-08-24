@@ -132,31 +132,9 @@ $function$
 -- Requête export_synthese_initialisation
 
 COPY (
---CREATE TEMP TABLE temp_det_org
---AS
---SELECT 
---r.id_obs1,
---r.id_org_obs1,
---o.nom
---FROM flore.releve r
---JOIN referentiels.organisme o ON o.id_org = r.id_org_obs1 
---WHERE
---	(r.meta_id_groupe = 1
---		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
---	CREATE INDEX temp_det_org_id_obs1_idx ON temp_det_org USING btree(id_obs1);
---ON COMMIT DROP ROWS
---DROP TABLE temp_det_org;
+
 WITH
---	det_org AS(
---		SELECT 
---			r.id_obs1,
---			r.id_org_obs1,
---			o.nom
---		FROM flore.releve r
---		JOIN referentiels.organisme o ON o.id_org = r.id_org_obs1 
---		WHERE
---		(r.meta_id_groupe = 1
---			OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))),
+
 	evee AS (
     	SELECT rt.cd_ref
     	FROM referentiels.reglementation_taxon rt
@@ -380,14 +358,12 @@ FROM flore.releve r
 	LEFT JOIN referentiels.herbier h ON o.id_herbier1 = h.id_herbier
     LEFT JOIN evee e ON e.cd_ref = o.cd_ref
     LEFT JOIN sensi_reg se ON se.cd_ref = o.cd_ref
-	--LEFT JOIN det_org dor ON dor.id_obs1 = r.id_obs1
-	--LEFT JOIN temp_det_org tdo ON tdo.id_obs1 = r.id_obs1
+	
     LEFT JOIN sensi_dep sed ON sed.cd_ref = o.cd_ref AND sed.dept = r.insee_dept::TEXT AND sed.dept IN ('01', '26', '38', '73', '74')
 WHERE
 	(r.meta_id_groupe = 1
 		OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
---DROP TABLE temp_det_org;
---limit 100
+
 ) TO stdout
 WITH (format csv, header, delimiter E'\t')
 ;
