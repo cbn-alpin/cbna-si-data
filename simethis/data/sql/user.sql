@@ -10,7 +10,7 @@ CREATE TABLE flore.cbna_agent(
 
 -- Insertion des données du fichier CSV dans la table
 COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
-	FROM '/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/cbna_agent.csv'
+	FROM '/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/raw/cbna_agent.csv'
 DELIMITER ','
 CSV HEADER;
 
