@@ -37,9 +37,13 @@ echo 'hello utils functions'
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/source.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/$(date +'%F')_source.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/organism.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/$(date +'%F')_organism.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v cbnaAgentCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/raw/cbna_agent.csv'" -f "./user.sql"
+sudo chown cbionda /tmp/user.csv
+mv /tmp/user.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/acquisition_framework.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/$(date +'%F')_acquisition_framework.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/dataset.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/$(date +'%F')_dataset.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/synthese.sql"
+sudo chown cbionda /tmp/synthese.csv
+mv /tmp/synthese.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
 echo 'all CSV files created'
 
 
