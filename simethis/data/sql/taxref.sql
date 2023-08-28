@@ -1,6 +1,10 @@
 COPY (
 	SELECT
-		t.cd_nom,
+		CASE
+			WHEN t.cd_nom < 15
+				THEN t.cd_nom + 30000000
+			ELSE t.cd_nom
+		END AS cd_nom,
 		NULL AS id_statut,
 		CASE 
 			WHEN t.habitat ILIKE '0' THEN NULL
@@ -16,7 +20,11 @@ COPY (
 		t.tribu AS tribu,
 		t.cd_taxsup AS cd_taxsup,
 		t.cd_sup AS cd_sup,
-		t.cd_ref AS cd_ref,
+		CASE
+			WHEN t.cd_ref < 15
+				THEN t.cd_ref + 30000000
+			ELSE t.cd_ref
+		END AS cd_ref,
 		t.lib_nom AS lb_nom,
 		t.lib_auteur AS lb_auteur,
 		t.nom_complet AS nom_complet,
