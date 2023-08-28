@@ -369,8 +369,6 @@ COPY (
 			OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 
 ) TO '/tmp/synthese.csv' WITH(format csv, header, delimiter E'\t');
-WITH (format csv, header, delimiter E'\t')
-;
 
 
 
