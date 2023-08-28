@@ -54,3 +54,26 @@ AS $function$
 $function$
 ;
 
+
+CREATE OR REPLACE FUNCTION public.delete_space(txtWithSpace varchar)
+ RETURNS text
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+	DECLARE
+		txtWithoutSpace text;
+	
+	BEGIN 
+		txtWithoutSpace := '';
+	
+		SELECT INTO txtWithoutSpace
+			CASE 
+		    	WHEN txtWithSpace IS NOT NULL AND txtWithSpace !~* '^\s*$'
+		    		THEN txtWithSpace
+		    	ELSE NULL
+		    END;
+		
+		RETURN txtWithoutSpace;
+	END;
+$function$
+;
