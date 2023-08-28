@@ -239,7 +239,11 @@ COPY (
 		END AS reference_biblio,
 	COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
 	COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
-	o.cd_ref AS cd_nom,
+	CASE
+		WHEN o.cd_ref < 15
+			THEN o.cd_ref + 30000000
+		ELSE o.cd_ref
+	END AS cd_nom,
 	NULL::integer AS cd_hab,
 		CASE
 			WHEN o.nom_taxon IS NOT NULL
