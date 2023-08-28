@@ -54,7 +54,11 @@ COPY (
 			public.delete_space(o.comm) AS "comment",
 			NULL::boolean AS "enable",
 			jsonb_build_object(
-				'code', o.code, 'idGroupe', o.meta_id_groupe, 'anneeNai', o.annee_nai , 'anneeDec', o.annee_dec
+				'code', o.code,
+			    'idGroupe', o.meta_id_groupe, 
+				'anneeNai', o.annee_nai , 
+				'anneeDec', o.annee_dec, 
+				'idObs', r.id_obs1
 			)::jsonb AS additional_data,
 			o.meta_date_saisie::timestamp AS meta_create_date,
 			o.meta_date_maj::timestamp AS meta_update_date,
@@ -74,7 +78,11 @@ COPY (
 			public.delete_space(o.comm) AS "comment",
 			NULL::boolean AS "enable",
 			jsonb_build_object(
-				'code', o.code, 'idGroupe', o.meta_id_groupe, 'anneeNai', o.annee_nai , 'anneeDec', o.annee_dec
+				'code', o.code, 
+				'idGroupe', o.meta_id_groupe, 
+				'anneeNai', o.annee_nai , 
+				'anneeDec', o.annee_dec, 
+				'idObs', r.id_obs2
 			)::jsonb AS additional_data,
 			o.meta_date_saisie::timestamp AS meta_create_date,
 			o.meta_date_maj::timestamp AS meta_update_date,
@@ -94,7 +102,11 @@ COPY (
 			public.delete_space(o.comm) AS "comment",
 			NULL::boolean AS "enable",
 			jsonb_build_object(
-				'code', o.code, 'idGroupe', o.meta_id_groupe, 'anneeNai', o.annee_nai , 'anneeDec', o.annee_dec
+				'code', o.code, 
+				'idGroupe', o.meta_id_groupe, 
+				'anneeNai', o.annee_nai , 
+				'anneeDec', o.annee_dec,
+				'idObs', r.id_obs3
 			)::jsonb AS additional_data,
 			o.meta_date_saisie::timestamp AS meta_create_date,
 			o.meta_date_maj::timestamp AS meta_update_date,
@@ -114,7 +126,11 @@ COPY (
 			public.delete_space(o.comm) AS "comment",
 			NULL::boolean AS "enable",
 			jsonb_build_object(
-				'code', o.code, 'idGroupe', o.meta_id_groupe, 'anneeNai', o.annee_nai , 'anneeDec', o.annee_dec
+				'code', o.code, 
+				'idGroupe', o.meta_id_groupe, 
+				'anneeNai', o.annee_nai , 
+				'anneeDec', o.annee_dec,
+				'idObs', r.id_obs4
 			)::jsonb AS additional_data,
 			o.meta_date_saisie::timestamp AS meta_create_date,
 			o.meta_date_maj::timestamp AS meta_update_date,
@@ -134,7 +150,11 @@ COPY (
 			public.delete_space(o.comm) AS "comment",
 			NULL::boolean AS "enable",
 			jsonb_build_object(
-				'code', o.code, 'idGroupe', o.meta_id_groupe, 'anneeNai', o.annee_nai , 'anneeDec', o.annee_dec
+				'code', o.code, 
+				'idGroupe', o.meta_id_groupe, 
+				'anneeNai', o.annee_nai , 
+				'anneeDec', o.annee_dec,
+				'idObs', r.id_obs5
 			)::jsonb AS additional_data,
 			o.meta_date_saisie::timestamp AS meta_create_date,
 			o.meta_date_maj::timestamp AS meta_update_date,
@@ -158,7 +178,11 @@ COPY (
 		public.delete_space(u.comm) AS "comment",
 		NULL::boolean AS "enable",
 		jsonb_build_object(
-			'code', u.code, 'idGroupe', u.id_groupe, 'password', u.pass, 'lastLogin', u.last_login, 'key', u."key"
+			'code', u.code, 
+			'idGroupe', u.id_groupe, 
+			'password', u.pass, 
+			'lastLogin', u.last_login, 
+			'key', u."key"
 		)::jsonb AS additional_data,
 		u.meta_date_saisie::timestamp AS meta_create_date,
 		u.meta_date_maj::timestamp AS meta_update_date,
@@ -182,7 +206,11 @@ COPY (
 		public.delete_space(u.comm) AS "comment",
 		NULL::boolean AS "enable",
 		jsonb_build_object(
-			'code', u.code, 'idGroupe', u.id_groupe, 'password', u.pass, 'lastLogin', u.last_login, 'key', u."key"
+			'code', u.code, 
+			'idGroupe', u.id_groupe, 
+			'password', u.pass, 
+			'lastLogin', u.last_login, 
+			'key', u."key"
 		)::jsonb AS additional_data,
 		u.meta_date_saisie::timestamp AS meta_create_date,
 		u.meta_date_maj::timestamp AS meta_update_date,
