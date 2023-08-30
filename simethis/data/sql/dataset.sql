@@ -96,7 +96,7 @@ COPY (
     --    date_der_exp
     --  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
 ) TO stdout
-WITH (format csv, header, delimiter E'\t')
+WITH (format csv, header, delimiter E'\t', null '\N')
 ;
      
      
