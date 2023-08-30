@@ -22,42 +22,45 @@ COPY(
 			AND r.id_org_f <> 2785 
 			AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')
 	)
+SELECT DISTINCT ON (unique_name."name") * 
+	FROM( 
+		SELECT
+			oc.nom::TEXT AS "name",
+			'Observations issues de Simethis et produites par les CBN Corse et Méditerranéen et leurs partenaires (Parcs nationaux, parcs naturels régionaux, CEN, bureaux d''études, …)'::text AS "desc",
+			NULL::text AS entity_source_pk_field,
+			NULL::character varying AS url, 
+			NULL AS additional_data,
+			oc.meta_date_saisie::timestamp AS meta_create_date,
+			oc.meta_date_maj::timestamp AS meta_update_date,
+			'I'::character(1) AS meta_last_action
+		FROM others_cbn oc
+			
+		UNION
 
-	SELECT
-		oc.nom::TEXT AS name,
-		'Observations issues de Simethis et produites par les CBN Corse et Méditerranéen et leurs partenaires (Parcs nationaux, parcs naturels régionaux, CEN, bureaux d''études, …)'::text AS "desc",
-		NULL::text AS entity_source_pk_field,
-		NULL::character varying AS url, 
-		NULL AS additional_data,
-		oc.meta_date_saisie::timestamp AS meta_create_date,
-		oc.meta_date_maj::timestamp AS meta_update_date,
-		'I'::character(1) AS meta_last_action
-	FROM others_cbn oc
-		
-	UNION
+		SELECT
+			pc.nom::TEXT AS "name",
+			'Observations produites par les partenaires du CBNA' AS "desc",
+			NULL::text AS entity_source_pk_field,
+			NULL::character varying AS url,
+			NULL AS additional_data,
+			pc.meta_date_saisie::timestamp AS meta_create_date,
+			pc.meta_date_maj::timestamp AS meta_update_date,
+			'I'::character(1) AS meta_last_action
+		FROM partners_cbna pc
 
-	SELECT   
-		pc.nom::TEXT AS name,
-		'Observations produites par les partenaires du CBNA' AS "desc",
-		NULL::text AS entity_source_pk_field,
-		NULL::character varying AS url,
-		NULL AS additional_data,
-		pc.meta_date_saisie::timestamp AS meta_create_date,
-		pc.meta_date_maj::timestamp AS meta_update_date,
-		'I'::character(1) AS meta_last_action
-	FROM partners_cbna pc
+		UNION 
 
-	UNION 
-
-	SELECT 
-		'flora_cbna'::TEXT AS name,
-		'Observations produites par le CBNA' AS "desc",
-		NULL::text AS entity_source_pk_field,
-		NULL::character varying AS url,
-		NULL AS additional_data,
-		'2021-01-28'::timestamp AS meta_create_date,
-		'2023-04-21'::timestamp AS meta_update_date,
-		'I'::character(1) AS meta_last_action
+		SELECT
+			'flora_cbna'::TEXT AS "name",
+			'Observations produites par le CBNA' AS "desc",
+			NULL::text AS entity_source_pk_field,
+			NULL::character varying AS url,
+			NULL AS additional_data,
+			'2021-01-28'::timestamp AS meta_create_date,
+			'2023-04-21'::timestamp AS meta_update_date,
+			'I'::character(1) AS meta_last_action
+			
+	) AS unique_name
 ) TO stdout
 WITH (format csv, header, delimiter E'\t', null '\N')
 ;    
