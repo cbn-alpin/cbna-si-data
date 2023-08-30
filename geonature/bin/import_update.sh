@@ -74,10 +74,12 @@ function main() {
 
     buildTablePrefix
 
-    executeCopy "taxref rang"
-    displayStats "taxref rang"
-    executeUpgradeScript "taxref rang" "insert"
+    parseCsv "taxref rangs" "tr"
+    executeCopy "taxref rangs"
+    displayStats "taxref rangs"
+    executeUpgradeScript "taxref rangs" "insert"
 
+    parseCsv "taxref" "t"
     executeCopy "taxref"
     displayStats "taxref"
     executeUpgradeScript "taxref" "insert"
@@ -191,7 +193,7 @@ function parseCsv() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="cbna_filename_${data_type_abbr}"
+    declare -n csv_file="sialp_filename_${data_type_abbr}"
     local csv_to_import="${csv_file%.csv}_rti.csv"
 
     # Exit if CSV file not found
@@ -223,7 +225,7 @@ function executeCopy() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="cbna_filename_${data_type_abbr}"
+    declare -n csv_file="sialp_filename_${data_type_abbr}"
     local csv_to_import="${csv_file%.csv}_rti.csv"
 
     # Exit if CSV file not found
@@ -259,7 +261,7 @@ function displayStats() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="cbna_filename_${data_type_abbr}"
+    declare -n csv_file="sialp_filename_${data_type_abbr}"
 
     # Exit if CSV file not found
     if ! [[ -f "${raw_dir}/${csv_file}" ]]; then
@@ -287,7 +289,7 @@ function executeUpgradeScript() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="cbna_filename_${data_type_abbr}"
+    declare -n csv_file="sialp_filename_${data_type_abbr}"
 
     # Exit if CSV file not found
     if ! [[ -f "${raw_dir}/${csv_file}" ]]; then
