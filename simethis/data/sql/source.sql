@@ -22,7 +22,7 @@ COPY(
 			AND r.id_org_f <> 2785 
 			AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')
 	)
-SELECT DISTINCT ON (unique_name."name") * 
+SELECT DISTINCT ON (unique_source."name") * 
 	FROM( 
 		SELECT
 			oc.nom::TEXT AS "name",
@@ -60,7 +60,7 @@ SELECT DISTINCT ON (unique_name."name") *
 			'2023-04-21'::timestamp AS meta_update_date,
 			'I'::character(1) AS meta_last_action
 			
-	) AS unique_name
+	) AS unique_source
 ) TO stdout
 WITH (format csv, header, delimiter E'\t', null '\N')
 ;    
