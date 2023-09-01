@@ -83,5 +83,5 @@ function main() {
 
 function createUser() {
     psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
-        # -v "${psql_var}=${table}"
+        -v "${psql_var}=${role}"
 }
