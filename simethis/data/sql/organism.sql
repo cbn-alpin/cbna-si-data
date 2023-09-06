@@ -29,8 +29,8 @@ SELECT DISTINCT ON (unique_id)
 			ELSE NULL
 		 END),
 		 ov.permid::varchar
-	) AS unique_id,
-	ov.nom AS name,
+	)::uuid AS unique_id,
+	ov.nom AS "name",
 	ov.adresse AS adress,
 	public.delete_space(ov.cp) AS postal_code,
 	public.delete_space(ov.ville) AS city,
@@ -73,8 +73,7 @@ JOIN flore.releve r ON r.id_org_f = ov.id_org
 WHERE (r.meta_id_groupe = 1
 	OR  (r.meta_id_groupe <> 1
 	AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
-) TO stdout
-WITH (format csv, header, delimiter E'\t')
+) TO '/tmp/organism.csv' WITH(format csv, header, delimiter E'\t', null '\N');
 ;
 
 DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
