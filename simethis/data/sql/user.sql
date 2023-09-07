@@ -1,4 +1,4 @@
--- Création d'une table, laquelle sera supprimée en fin de script, des agents du CBNA des services Conservation et Connaissance
+-- Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
 CREATE TABLE flore.cbna_agent(
 	gid serial PRIMARY KEY,
 	uuid uuid,
@@ -8,13 +8,13 @@ CREATE TABLE flore.cbna_agent(
 	release_date date
 );
 
--- Insertion des données du fichier CSV dans la table
+-- Insert datas from CSV file to table
 COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
 	FROM :cbnaAgentCsvFilePath
 DELIMITER ','
 CSV HEADER;
 
--- Récupération des uuid des agents
+-- Agent uuid recovery in the table
 UPDATE flore.cbna_agent AS ca
 SET uuid = u.permid
 FROM applications.utilisateur AS u
@@ -22,7 +22,7 @@ WHERE u.id_groupe = 1 AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name))
 
 COPY (
 	WITH
-	-- CTE Relevés d'observations produites sur le territoire du CBNA, observateurs du territoire du CBNA
+-- CTE Observation records produced on the CBNA territory, CBNA Territory Observers
 		releves_sialp AS( 
 			SELECT 
 				rel.id_releve,
@@ -33,14 +33,23 @@ COPY (
 				rel.id_obs3,
 				rel.id_obs4,
 				rel.id_obs5, 
-				COALESCE(org.uuid_national, org.permid::varchar) AS code_organism
+				lower(COALESCE(
+					(CASE
+						WHEN org.uuid_national ~* '^\s*$'
+							THEN NULL 
+						WHEN org.uuid_national IS NOT NULL 
+							THEN org.uuid_national
+						ELSE NULL
+					END),
+					org.permid::varchar
+					)) AS code_organism
 			FROM flore.releve rel
 				LEFT JOIN referentiels.organisme org ON org.id_org = rel.id_org_f
 			WHERE
 			(rel.meta_id_groupe = 1
 				OR  (rel.meta_id_groupe <> 1 AND rel.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 		)
-	-- Observateurs du territoire d'agrément du CBNA
+-- CBNA accreditation territory observers
 	SELECT DISTINCT ON (observers.unique_id) *
 	FROM (  	
 
@@ -52,7 +61,7 @@ COPY (
 			public.delete_space(o.email) AS email,
 			r.code_organism,
 			public.delete_space(o.comm) AS "comment",
-			NULL::boolean AS "enable",
+			NULL AS "enable",
 			jsonb_build_object(
 				'code', o.code,
 			    'idGroupe', o.meta_id_groupe, 
@@ -76,7 +85,7 @@ COPY (
 			public.delete_space(o.email) AS email,
 			r.code_organism,
 			public.delete_space(o.comm) AS "comment",
-			NULL::boolean AS "enable",
+			NULL AS "enable",
 			jsonb_build_object(
 				'code', o.code, 
 				'idGroupe', o.meta_id_groupe, 
@@ -100,7 +109,7 @@ COPY (
 			public.delete_space(o.email) AS email,
 			r.code_organism,
 			public.delete_space(o.comm) AS "comment",
-			NULL::boolean AS "enable",
+			NULL AS "enable",
 			jsonb_build_object(
 				'code', o.code, 
 				'idGroupe', o.meta_id_groupe, 
@@ -124,7 +133,7 @@ COPY (
 			public.delete_space(o.email) AS email,
 			r.code_organism,
 			public.delete_space(o.comm) AS "comment",
-			NULL::boolean AS "enable",
+			NULL AS "enable",
 			jsonb_build_object(
 				'code', o.code, 
 				'idGroupe', o.meta_id_groupe, 
@@ -148,7 +157,7 @@ COPY (
 			public.delete_space(o.email) AS email,
 			r.code_organism,
 			public.delete_space(o.comm) AS "comment",
-			NULL::boolean AS "enable",
+			NULL AS "enable",
 			jsonb_build_object(
 				'code', o.code, 
 				'idGroupe', o.meta_id_groupe, 
@@ -166,7 +175,7 @@ COPY (
 
 	UNION
 
-	-- Utilisateurs du CBNA
+-- CBNA users
 	(
 	SELECT DISTINCT ON (u.permid)
 		u.permid AS unique_id,
@@ -176,7 +185,7 @@ COPY (
 		public.delete_space(u.email) AS email,
 		COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
 		public.delete_space(u.comm) AS "comment",
-		NULL::boolean AS "enable",
+		NULL AS "enable",
 		jsonb_build_object(
 			'code', u.code, 
 			'idGroupe', u.id_groupe, 
@@ -194,7 +203,7 @@ COPY (
 
 	UNION 
 
-	-- Utilisateurs hors CBNA mais dont les observations se situent sur le territoire d'agrément
+-- Users outside CBNA but whose observations are located in the accreditation territory
 	(
 	SELECT DISTINCT ON (u.permid) 
 		u.permid AS unique_id,
@@ -204,7 +213,7 @@ COPY (
 		public.delete_space(u.email) AS email,
 		COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
 		public.delete_space(u.comm) AS "comment",
-		NULL::boolean AS "enable",
+		NULL AS "enable",
 		jsonb_build_object(
 			'code', u.code, 
 			'idGroupe', u.id_groupe, 
