@@ -19,17 +19,17 @@ VALUES ('ab8a47df-1cf0-4206-8307-5ef8a65cb8db', '3089', 'Société Botanique de 
 	   ('e254dcb1-42b1-455f-a7d9-9cb9d50bf66f', '10286', 'Direction Départementale de lAgriculture et de la Forêt 05');
 COPY (
 SELECT DISTINCT ON (unique_id)
-	COALESCE(
+	lower(COALESCE(
 		(CASE
-			WHEN lower(ov.uuid_national) ~* '^\s*$'
+			WHEN ov.uuid_national ~* '^\s*$'
 				THEN NULL 
-			WHEN lower(ov.uuid_national) IS NOT NULL 
-				AND ov.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
-				THEN lower(ov.uuid_national)
+			WHEN ov.uuid_national IS NOT NULL 
+				AND ov.permid NOT IN (SELECT permid FROM flore.permid_organism_uuid_duplicates)
+				THEN ov.uuid_national
 			ELSE NULL
 		 END),
 		 ov.permid::varchar
-	)::uuid AS unique_id,
+	))::uuid AS unique_id,
 	ov.nom AS "name",
 	ov.adresse AS adress,
 	public.delete_space(ov.cp) AS postal_code,
