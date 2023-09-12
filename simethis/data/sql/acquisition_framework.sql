@@ -1,10 +1,14 @@
 COPY (
-	SELECT
+	SELECT DISTINCT ON(unique_id)
 		mc.uuid_ca AS unique_id,
 		mc.lib_ca AS "name",
-		mc.desc_ca AS "desc",
+		CASE 
+			WHEN mc.desc_ca IS NULL
+				THEN ' '
+			ELSE mc.desc_ca 
+		END AS "desc",
 		mrter.cd_nomenclature AS code_nomenclature_territorial_level,
-		mc.comm_geo AS territory_desc,
+		public.delete_space(mc.comm_geo) AS territory_desc,
 		NULL AS keywords,
 		NULL AS code_nomenclature_financing_type,
 		NULL AS target_description,
@@ -12,20 +16,30 @@ COPY (
 		mc.id_ca_sup::varchar(255) AS parent_code,
 		mc.meta_cadre AS is_parent,
 		mc.date_lancement::date AS start_date,
-		mc.date_cloture::date AS end_date,
-		ARRAY[mrobj.cd_nomenclature] AS cor_objectifs,
+		CASE 
+			WHEN mc.date_cloture::varchar IS NOT NULL AND mc.date_cloture::varchar !~* '^\s*$'
+		    		THEN mc.date_cloture::date
+		    	ELSE NULL
+		    END AS end_date,
+		CASE 
+			WHEN mrobj.cd_nomenclature IS NOT NULL AND mrobj.cd_nomenclature !~* '^\s*$'
+				THEN ARRAY[mrobj.cd_nomenclature]
+			ELSE ARRAY['11']
+		END AS cor_objectifs,
 		ARRAY[1]::TEXT AS cor_voletsinp, --1 Terre
 		CASE
-				WHEN mc.acteur_principal IS NOT NULL THEN ARRAY[ARRAY[o.nom, '1'::character varying]] -- '1' contact principal
-				ELSE NULL::character varying[]
-			END AS cor_actors_organism,
-		ARRAY[ARRAY[split_part(u.email::TEXT, '@'::TEXT, 1), '1'::TEXT]] AS cor_actors_user,
+			WHEN mc.acteur_principal IS NOT NULL 
+				THEN ARRAY[ARRAY[o.nom, '1'::character varying]] -- '1' contact principal
+			ELSE NULL::character varying[]
+		END AS cor_actors_organism,
+		ARRAY[ARRAY[u.permid::character varying, '1'::TEXT]] AS cor_actors_user,
 		NULL::json AS cor_publications,
 		jsonb_build_object(
 			'idCa', mc.id_ca, 'objectifCa', mc.objectif_ca, 'nivTerr', mc.niv_terr_ca, 'acteurPrincipal', mc.acteur_principal, 'idCaSinpReg', mc.id_ca_sinp_reg
 		)::jsonb AS additional_data,
 		mc.date_creation_ca::timestamp AS meta_create_date,
-		mc.date_maj_ca::timestamp AS meta_update_date
+		mc.date_maj_ca::timestamp AS meta_update_date,
+		'I' AS meta_last_action
 	FROM sinp.metadata_ca mc
 		JOIN sinp.metadata_jdd mj ON mj.id_ca = mc.id_ca 
 		LEFT JOIN sinp.metadata_ref mrter ON mrter.id_nomenclature = mc.niv_terr_ca
@@ -39,6 +53,7 @@ COPY (
 ) TO stdout
 WITH (format csv, header, delimiter E'\t', null '\N')
 ;
+
 	
 	
 	
