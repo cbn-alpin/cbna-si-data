@@ -60,28 +60,116 @@ function main() {
     # Init script
     initScript "${@}"
     parseScriptOptions "${@}"
-    loadScriptConfig "${setting_file_path-}"
-    redirectOutput "${cbna_log_imports}"
+    loadModuleDefaultConfig "${setting_file_path-}"
+    loadModuleUserConfig "${setting_file_path-}"
+    redirectOutput "${sialp_log_imports}"
+    local readonly commands=("psql" "dropdb" "createdb" "unzip")
+    checkBinary "${commands[@]}"
 
     #+----------------------------------------------------------------------------------------------------------+
     # Start script
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
-    echo 'Drop database "si_cbn" if exists'
-    dropdb --if-exists si_cbn
-    echo 'Create database "si_cbn"'
-    createdb -T template0 si_cbn
-    echo 'Create users'
-    createUser
+    createDb
+    createUsers
+    createExtensions
 
-    read -r -n 1 key # Move to a new line
+    restoreSchemas
+    addUtilsfunctions
+
+    extractCSV "taxref_rangs"
+    extractCSV "taxref"
+    extractCSV "taxref_modifs"
+    extractCSV "source"
+    extractCSV
 
     #+----------------------------------------------------------------------------------------------------------+
     # Display script execution infos
     displayTimeElapsed
 }
 
-function createUser() {
-    psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
-        -v "${psql_var}=${role}"
+function createDb() {
+    printMsg "Drop database ${db_name} if exists"
+    dropdb --if-exists "${db_name}"
+    printMsg "Create database ${db_name}"
+    createdb -T template0 "${db_name}"
 }
+
+function createUsers() {
+    createUser "si_user"
+    createUser "cbnmed_user"
+    createUser "cbnmed_admin"
+    createUser "cbna_user"
+    createUser "cbnc_user"
+    createUser "cbnc_admin"
+    createUser "cbna_admin"
+    createUser "d.rougie"
+}
+
+function createUser() {
+    printMsg "Create user ${role}"
+    local role="${1,,}"
+    echo "SELECT 'CREATE USER ${role}' WHERE NOT EXISTS (\
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = '${role}'\
+    )\gexec" | psql
+    # psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
+    #     -v role="${role}" \
+    #     -c "CREATE USER :'role' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = :'role')"
+}
+
+function createExtensions() {
+    createExtension "postgis"
+    createExtension "dblink"
+    createExtension "uuid-ossp"
+    createExtension "tablefunc"
+    createExtension "unaccent"
+    createExtension "fuzzystrmatch"
+    createExtension "postgres_fdw"
+    createExtension "intarray"
+    createExtension "ogr_fdw"
+}
+
+function createExtension() {
+    local extensionName="${1,,}"
+    printMsg "Create user ${extensionName}"
+    psql -d ${db_name} -c "create extension ${extensionName};"
+}
+
+function restoreSchemas() {
+    restoreSchema "referentiels"
+    restoreSchema "applications"
+    restoreSchema "sinp"
+    restoreSchema "vegetation"
+    restoreSchema "flore"
+}
+
+function restoreSchema() {
+    local schemaName="${1,,}"
+    printMsg "Restore schema ${schemaName}"
+    pg_restore -h ${db_host} -p ${db_port} -U ${db_user} -d ${db_name} \
+    --jobs ${pg_restore_jobs} -v \
+    "${dump_foler}/${schemaName}_${si_cbn_import_date}.dump" \
+    2>&1 | tee "${schemaName}_${si_cbn_import_date}_pgrestore.log"
+}
+
+function addUtilsfunctions() {
+    printMsg "Adding utils functions"
+    psql -d "${db_name}" \
+        -f "${root_dir}/simethis/data/sql/utils.sql"
+}
+
+function extractCSV() {
+    local csvFileName="${1,,}"
+    printMsg "Extract CSV file ${csvFileName}"
+    if ${csvFileName} = "organism"; then
+        psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
+        -f "${root_dir}/simethis/data/sql/${csvFileName}.sql"
+        sudo chown ${db_user} /tmp/${csvFileName}.csv
+        sudo mv /tmp/${csvFileName}.csv
+    fi
+    psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
+    -f "${root_dir}/simethis/data/sql/${csvFileName}.sql" \
+    > "${raw_dir}/${csvFileName}.csv"
+}
+
+main "${@}"
