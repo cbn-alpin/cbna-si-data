@@ -15,7 +15,11 @@ COPY (
 		NULL AS ecologic_or_geologic_target,
 		mcasup.uuid_ca AS parent_code,
 		mc.meta_cadre AS is_parent,
-		mc.date_lancement::date AS start_date,
+		CASE 
+			WHEN mc.date_lancement IS NOT NULL AND mc.date_lancement::varchar !~* '^\s*$'
+				THEN mc.date_lancement::date
+			ELSE mj.date_creation_jdd::date
+		END AS start_date,
 		CASE 
 			WHEN mc.date_cloture::varchar IS NOT NULL AND mc.date_cloture::varchar !~* '^\s*$'
 		    		THEN mc.date_cloture::date
@@ -37,7 +41,11 @@ COPY (
 		jsonb_build_object(
 			'idCa', mc.id_ca, 'objectifCa', mc.objectif_ca, 'nivTerr', mc.niv_terr_ca, 'acteurPrincipal', mc.acteur_principal, 'idCaSinpReg', mc.id_ca_sinp_reg
 		)::jsonb AS additional_data,
-		mc.date_creation_ca::timestamp AS meta_create_date,
+		CASE 
+			WHEN mc.date_creation_ca IS NOT NULL AND mc.date_creation_ca::varchar !~* '^\s*$'
+				THEN mc.date_creation_ca::timestamp
+			ELSE mj.date_creation_jdd::timestamp
+		END AS meta_create_date,
 		mc.date_maj_ca::timestamp AS meta_update_date,
 		'I' AS meta_last_action
 	FROM sinp.metadata_ca mc
