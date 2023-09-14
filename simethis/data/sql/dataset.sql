@@ -17,11 +17,11 @@ COPY (
     --           FROM sinp.suivi_uuid su_1
     --          WHERE su_1.reg::text = 'PACA'::text AND su_1.table_sce::text = 'jdd'::text
     --        )
-    SELECT
+    SELECT DISTINCT ON(unique_id_sinp)
         jd.uuid_jdd AS unique_id_sinp,
-        concat(ca.id_ca, ' - ', ca.lib_ca)::varchar(255) AS code_acquisition_framework,
-        jd.lib_jdd AS "name",
-        jd.lib_jdd_court AS shortname,
+        ca.uuid_ca AS code_acquisition_framework,
+        jd.lib_jdd::varchar(150) AS "name",
+        jd.lib_jdd_court::varchar(30) AS shortname,
         jd.desc_jdd AS "desc",
         CASE
             WHEN jd.type_donnees IS NOT NULL
@@ -45,17 +45,18 @@ COPY (
                 THEN mc.cd_nomenclature
             ELSE '1' -- Observation directe
         END code_nomenclature_collecting_method,    
-        CASE
-            WHEN ori.cd_nomenclature IS NOT NULL
-                THEN ori.cd_nomenclature
-            ELSE 'NSP' -- Ne Sait Pas
+        CASE 
+            WHEN ori.lib_valeur::text = 'Privée'::text 
+                OR ori.lib_valeur::text = 'Publique'::TEXT
+                    THEN ori.cd_nomenclature::text
+            ELSE 'NSP'::text -- Ne sait pas
         END AS code_nomenclature_data_origin,
         CASE
             WHEN sta.cd_nomenclature IS NOT NULL
                 THEN sta.cd_nomenclature
             ELSE 'NSP' -- Ne Sait Pas
         END AS code_nomenclature_source_status,
-        '1'::varchar(25) AS code_nomenclature_type, -- Jeu de données
+        '1'::varchar(25) AS code_nomenclature_resource_type, -- Jeu de données
         ARRAY[ARRAY[ter.cd_nomenclature, 'Métropole'::character varying]]::TEXT AS cor_territory,
         (ARRAY[ARRAY[pri.uuid_national, '1'::character varying]]::TEXT ||
             CASE
