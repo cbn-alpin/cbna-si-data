@@ -1,7 +1,7 @@
 COPY (
 	SELECT DISTINCT ON(unique_id)
 		mc.uuid_ca AS unique_id,
-		mc.lib_ca AS "name",
+		mc.lib_ca::varchar(255) AS "name",
 		CASE 
 			WHEN mc.desc_ca IS NULL
 				THEN ' '
@@ -13,7 +13,7 @@ COPY (
 		NULL AS code_nomenclature_financing_type,
 		NULL AS target_description,
 		NULL AS ecologic_or_geologic_target,
-		mc.id_ca_sup::varchar(255) AS parent_code,
+		mcasup.uuid_ca AS parent_code,
 		mc.meta_cadre AS is_parent,
 		mc.date_lancement::date AS start_date,
 		CASE 
@@ -42,6 +42,7 @@ COPY (
 		'I' AS meta_last_action
 	FROM sinp.metadata_ca mc
 		JOIN sinp.metadata_jdd mj ON mj.id_ca = mc.id_ca 
+		LEFT JOIN sinp.metadata_ca mcasup ON mcasup.id_ca = mcasup.id_ca_sup
 		LEFT JOIN sinp.metadata_ref mrter ON mrter.id_nomenclature = mc.niv_terr_ca
 		LEFT JOIN sinp.metadata_ref mrobj ON mrobj.id_nomenclature = mc.objectif_ca
 		LEFT JOIN referentiels.organisme o ON o.id_org = mc.acteur_principal 
