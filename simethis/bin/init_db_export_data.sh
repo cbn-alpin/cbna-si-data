@@ -81,7 +81,11 @@ function main() {
     extractCSV "taxref"
     extractCSV "taxref_modifs"
     extractCSV "source"
-    extractCSV
+    extractCSV "organism"
+    extractCSV "user"
+    extractCSV "acquisition_framework"
+    extractCSV "dataset"
+    extractCSV "synthese"
 
     #+----------------------------------------------------------------------------------------------------------+
     # Display script execution infos
@@ -112,9 +116,6 @@ function createUser() {
     echo "SELECT 'CREATE USER ${role}' WHERE NOT EXISTS (\
     SELECT FROM pg_catalog.pg_roles WHERE rolname = '${role}'\
     )\gexec" | psql
-    # psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
-    #     -v role="${role}" \
-    #     -c "CREATE USER :'role' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = :'role')"
 }
 
 function createExtensions() {
@@ -161,12 +162,22 @@ function addUtilsfunctions() {
 function extractCSV() {
     local csvFileName="${1,,}"
     printMsg "Extract CSV file ${csvFileName}"
-    if ${csvFileName} = "organism"; then
+
+    if [${csvFileName} = "organism"] || [${csvFileName} = "synthese"]; then
         psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
         -f "${root_dir}/simethis/data/sql/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
-        sudo mv /tmp/${csvFileName}.csv
+        sudo mv /tmp/${csvFileName}.csv ${raw_dir}/
     fi
+
+    if ${csvFileName} = "user"; then
+        psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
+        -v cbnaAgentCsvFilePath="${root_dir}/simethis/data/raw/cbna_agent.csv" \
+        -f "${root_dir}/simethis/data/sql/${csvFileName}.sql"
+        sudo chown ${db_user} /tmp/${csvFileName}.csv
+        sudo mv /tmp/${csvFileName}.csv ${raw_dir}/
+    fi
+
     psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
     -f "${root_dir}/simethis/data/sql/${csvFileName}.sql" \
     > "${raw_dir}/${csvFileName}.csv"
