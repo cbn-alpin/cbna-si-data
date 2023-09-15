@@ -19,10 +19,18 @@ COPY (
     --        )
     SELECT DISTINCT ON(unique_id_sinp)
         jd.uuid_jdd AS unique_id_sinp,
-        ca.uuid_ca AS code_acquisition_framework,
+        ca.uuid_ca::varchar(255) AS code_acquisition_framework,
         jd.lib_jdd::varchar(150) AS "name",
-        jd.lib_jdd_court::varchar(30) AS shortname,
-        jd.desc_jdd AS "desc",
+        CASE
+            WHEN ca.uuid_ca = 'b7456c07-9c0b-4e34-abc3-cb35dfc68eb9'
+                THEN 'NEOUE'
+            ELSE jd.lib_jdd_court
+        END AS shortname,
+        CASE
+            WHEN jd.desc_jdd IS NULL
+                THEN ''
+            ELSE jd.desc_jdd::text 
+        END AS "desc",
         CASE
             WHEN jd.type_donnees IS NOT NULL
                 THEN td.cd_nomenclature
@@ -35,7 +43,7 @@ COPY (
             WHEN obj.cd_nomenclature IS NOT NULL
                 THEN obj.cd_nomenclature::varchar(25)
             ELSE '1.1' -- Observations naturalistes opportunistes
-        END code_nomenclature_dataset_objectif,  
+        END AS code_nomenclature_dataset_objectif,  
         NULL::double precision AS bbox_west,
         NULL::double precision AS bbox_est,
         NULL::double precision AS bbox_south,
@@ -44,7 +52,7 @@ COPY (
             WHEN mc.cd_nomenclature IS NOT NULL
                 THEN mc.cd_nomenclature
             ELSE '1' -- Observation directe
-        END code_nomenclature_collecting_method,    
+        END AS code_nomenclature_collecting_method,    
         CASE 
             WHEN ori.lib_valeur::text = 'Privée'::text 
                 OR ori.lib_valeur::text = 'Publique'::TEXT
@@ -56,8 +64,13 @@ COPY (
                 THEN sta.cd_nomenclature
             ELSE 'NSP' -- Ne Sait Pas
         END AS code_nomenclature_source_status,
-        '1'::varchar(25) AS code_nomenclature_resource_type, -- Jeu de données
-        ARRAY[ARRAY[ter.cd_nomenclature, 'Métropole'::character varying]]::TEXT AS cor_territory,
+        ARRAY[ARRAY[concat('"', 
+            CASE 
+                WHEN ter.cd_nomenclature IS NULL 
+                    THEN 'METROP'::character VARYING
+                ELSE ter.cd_nomenclature
+              END::TEXT,'"',',', '""')]] 
+        AS cor_territory,
         (ARRAY[ARRAY[pri.uuid_national, '1'::character varying]]::TEXT ||
             CASE
                 WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[pro.uuid_national, '6'::character varying] -- '6' Producteur
