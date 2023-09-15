@@ -111,8 +111,8 @@ function createUsers() {
 }
 
 function createUser() {
-    printMsg "Create user ${role}"
     local role="${1,,}"
+    printMsg "Create user ${role}"
     echo "SELECT 'CREATE USER ${role}' WHERE NOT EXISTS (\
     SELECT FROM pg_catalog.pg_roles WHERE rolname = '${role}'\
     )\gexec" | psql
@@ -121,7 +121,7 @@ function createUser() {
 function createExtensions() {
     createExtension "postgis"
     createExtension "dblink"
-    createExtension "uuid-ossp"
+    createExtension '"uuid-ossp"'
     createExtension "tablefunc"
     createExtension "unaccent"
     createExtension "fuzzystrmatch"
@@ -132,7 +132,7 @@ function createExtensions() {
 
 function createExtension() {
     local extensionName="${1,,}"
-    printMsg "Create user ${extensionName}"
+    printMsg "Create extension ${extensionName}"
     psql -d ${db_name} -c "create extension ${extensionName};"
 }
 
@@ -149,8 +149,8 @@ function restoreSchema() {
     printMsg "Restore schema ${schemaName}"
     pg_restore -h ${db_host} -p ${db_port} -U ${db_user} -d ${db_name} \
     --jobs ${pg_restore_jobs} -v \
-    "${dump_foler}/${schemaName}_${si_cbn_import_date}.dump" \
-    2>&1 | tee "${schemaName}_${si_cbn_import_date}_pgrestore.log"
+    "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}.dump" \
+    2>&1 | tee "${schemaName}_${si_cbn_import_date//-/}_pgrestore.log"
 }
 
 function addUtilsfunctions() {
