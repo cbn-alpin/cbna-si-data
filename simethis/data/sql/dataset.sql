@@ -64,23 +64,41 @@ COPY (
                 THEN sta.cd_nomenclature
             ELSE 'NSP' -- Ne Sait Pas
         END AS code_nomenclature_source_status,
-        ARRAY[ARRAY[concat('"', 
+        ARRAY[ARRAY[ 
             CASE 
                 WHEN ter.cd_nomenclature IS NULL 
-                    THEN 'METROP'::character VARYING
+                    THEN 'METROP'
                 ELSE ter.cd_nomenclature
-              END::TEXT,'"',',', '""')]] 
+              END, 'Métropole']] 
         AS cor_territory,
-        (ARRAY[ARRAY[pri.uuid_national, '1'::character varying]]::TEXT ||
-            CASE
-                WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[pro.uuid_national, '6'::character varying] -- '6' Producteur
-                ELSE NULL::character varying[]
-            END) ||
-            CASE
-                WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[fi.uuid_national, '2'::character varying] -- '2' Financeur
-                ELSE NULL::character varying[]
-            END AS cor_actors_organism,
-        ARRAY[ARRAY[split_part(u.email::text, '@'::text, 1), '1'::text]] AS cor_actors_user,
+        ARRAY[
+            CASE 
+            	WHEN COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING) IS NULL
+            		THEN ARRAY[NULL, '1'] 
+            	ELSE ARRAY[COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING), '1'] -- Contact principal
+            END,
+            CASE 
+            	WHEN COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING) IS NULL
+            		THEN ARRAY[NULL, '2'] 
+            	ELSE ARRAY[COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING), '2'] -- Financeur
+            END,
+            CASE 
+            	WHEN COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING) IS NULL
+            		THEN ARRAY[NULL, '5'] 
+            	ELSE ARRAY[COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING), '5'] -- Fournisseur
+            END,
+            CASE 
+            	WHEN COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING) IS NULL
+            		THEN ARRAY[NULL, '6'] 
+            	ELSE ARRAY[COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING), '6'] -- Producteur
+            END
+            ] AS cor_actors_organism,
+        ARRAY[
+            ARRAY[upri.permid::CHARACTER VARYING, '1'::character VARYING], -- Contact principal
+            ARRAY[ufi.permid::CHARACTER VARYING, '2'::character VARYING], -- Financeur
+            ARRAY[ufo.permid::CHARACTER VARYING, '5'::character VARYING],  -- Fournisseur
+            ARRAY[upro.permid::CHARACTER VARYING, '6'::character VARYING] -- Producteur
+            ] AS cor_actors_user,
         jsonb_build_object(
             'idUserCreationJdd',jd.id_user_creation_jdd, 'methodCollect', jd.method_collect
         )::jsonb AS additional_data,
@@ -105,7 +123,12 @@ COPY (
         LEFT JOIN referentiels.organisme pri ON pri.id_org = jd.acteur_principal
         LEFT JOIN referentiels.organisme pro ON pro.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme fi ON fi.id_org = jd.acteur_financeur
+        LEFT JOIN referentiels.organisme fo ON fo.id_org = jd.acteur_metadata
         LEFT JOIN applications.utilisateur u ON u.id_user = ca.id_user_creation_ca
+        LEFT JOIN applications.utilisateur upri ON upri.id_user = jd.acteur_principal
+        LEFT JOIN applications.utilisateur upro ON upro.id_user = jd.acteur_producteur
+        LEFT JOIN applications.utilisateur ufi ON ufi.id_user = jd.acteur_financeur
+        LEFT JOIN applications.utilisateur ufo ON ufo.id_user = jd.acteur_metadata
     --     LEFT JOIN suivi_uuid su ON jd.uuid_jdd = su.permid,
     --    date_der_exp
     --  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
