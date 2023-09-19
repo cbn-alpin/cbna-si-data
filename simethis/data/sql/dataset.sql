@@ -71,34 +71,34 @@ COPY (
                 ELSE ter.cd_nomenclature
               END, 'Métropole']] 
         AS cor_territory,
-        ARRAY[
-            CASE 
-            	WHEN COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING) IS NULL
-            		THEN ARRAY[NULL, '1'] 
-            	ELSE ARRAY[COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING), '1'] -- Contact principal
-            END,
-            CASE 
-            	WHEN COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING) IS NULL
-            		THEN ARRAY[NULL, '2'] 
-            	ELSE ARRAY[COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING), '2'] -- Financeur
-            END,
-            CASE 
-            	WHEN COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING) IS NULL
-            		THEN ARRAY[NULL, '5'] 
-            	ELSE ARRAY[COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING), '5'] -- Fournisseur
-            END,
-            CASE 
-            	WHEN COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING) IS NULL
-            		THEN ARRAY[NULL, '6'] 
-            	ELSE ARRAY[COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING), '6'] -- Producteur
+        (ARRAY[ARRAY[COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING), '1'::CHARACTER VARYING]] || -- Contact principal
+            CASE
+                WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING), '2'::CHARACTER VARYING] -- Financeur
+                ELSE NULL::CHARACTER VARYING[]
+            END) ||
+            CASE
+                WHEN jd.acteur_metadata IS NOT NULL THEN ARRAY[COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING), '5'::CHARACTER VARYING] -- Fournisseur
+                ELSE NULL::CHARACTER VARYING[]
+            END ||
+            CASE
+                WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING), '6'::CHARACTER VARYING] -- Producteur
+                ELSE NULL::CHARACTER VARYING[]
             END
-            ] AS cor_actors_organism,
-        ARRAY[
-            ARRAY[upri.permid::CHARACTER VARYING, '1'::character VARYING], -- Contact principal
-            ARRAY[ufi.permid::CHARACTER VARYING, '2'::character VARYING], -- Financeur
-            ARRAY[ufo.permid::CHARACTER VARYING, '5'::character VARYING],  -- Fournisseur
-            ARRAY[upro.permid::CHARACTER VARYING, '6'::character VARYING] -- Producteur
-            ] AS cor_actors_user,
+        AS cor_actors_organism,
+        (ARRAY[ARRAY[upri.permid::CHARACTER VARYING, '1'::CHARACTER VARYING]] || -- Contact principal
+	        CASE
+	            WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[ufi.permid::CHARACTER VARYING, '2'::CHARACTER VARYING] -- Financeur
+	            ELSE NULL::CHARACTER VARYING[]
+	        END) ||
+	        CASE
+	            WHEN jd.acteur_metadata IS NOT NULL THEN ARRAY[ufo.permid::CHARACTER VARYING, '5'::CHARACTER VARYING] -- Fournisseur
+	            ELSE NULL::CHARACTER VARYING[]
+	        END ||
+	        CASE
+	            WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[upro.permid::CHARACTER VARYING, '6'::CHARACTER VARYING] -- Producteur
+	            ELSE NULL::CHARACTER VARYING[]
+	        END
+        AS cor_actors_user,
         jsonb_build_object(
             'idUserCreationJdd',jd.id_user_creation_jdd, 'methodCollect', jd.method_collect
         )::jsonb AS additional_data,
