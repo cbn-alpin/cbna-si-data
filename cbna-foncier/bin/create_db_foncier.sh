@@ -54,7 +54,7 @@ function parseScriptOptions() {
 function main() {
     #+----------------------------------------------------------------------------------------------------------+
     # Load utils
-    source "$(dirname "${BASH_SOURCE[0]}")/../lib/utils.bash"
+    source "$(dirname "${BASH_SOURCE[0]}")/../../shared/lib/utils.bash"
 
     # Init script
     initScript "${@}"
