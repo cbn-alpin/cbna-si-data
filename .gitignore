@@ -1,7 +1,7 @@
 .vscode/
 venv/
-data/raw/*.csv
-data/raw/*.tar.bz2
+**/data/raw/*.csv
+**/data/raw/*.tar.bz2
 var/
 logs/
 log/
