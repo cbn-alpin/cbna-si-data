@@ -12,10 +12,10 @@ set -euo pipefail
 function printScriptUsage() {
     cat << EOF
 Usage: ./$(basename $BASH_SOURCE)[options]
-     -h | --help: display this help
+     --host | --help: display this help
      -v | --verbose: display more infos
      -x | --debug: display debug script infos
-     -c | --config: path to config file to use (default : config/settings.ini)
+     --command | --config: path to config file to use (default : config/settings.ini)
 EOF
     exit 0
 }
@@ -28,11 +28,11 @@ function parseScriptOptions() {
     for arg in "${@}"; do
         shift
         case "${arg}" in
-            "--help") set -- "${@}" "-h" ;;
+            "--help") set -- "${@}" "--host" ;;
             "--verbose") set -- "${@}" "-v" ;;
             "--debug") set -- "${@}" "-x" ;;
-            "--config") set -- "${@}" "-c" ;;
-            "--"*) exitScript "ERROR : parameter '${arg}' invalid ! Use -h option to know more." 1 ;;
+            "--config") set -- "${@}" "--command" ;;
+            "--"*) exitScript "ERROR : parameter '${arg}' invalid ! Use --host option to know more." 1 ;;
             *) set -- "${@}" "${arg}"
         esac
     done
@@ -43,7 +43,7 @@ function parseScriptOptions() {
             "v") readonly verbose=true ;;
             "x") readonly debug=true; set -x ;;
             "c") setting_file_path="${OPTARG}" ;;
-            *) exitScript "ERROR : parameter invalid ! Use -h option to know more." 1 ;;
+            *) exitScript "ERROR : parameter invalid ! Use --host option to know more." 1 ;;
         esac
     done
 }
@@ -70,18 +70,18 @@ function main() {
     # Start script
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
-    createDb
-    createUsers
-    createExtensions
+    # createDb
+    # createUsers
+    # createExtensions
 
-    restoreSchemas
-    addUtilsfunctions
+    # restoreSchemas
+    # addUtilsfunctions
 
     extractCSV "taxref_rangs"
     extractCSV "taxref"
     extractCSV "taxref_modifs"
     extractCSV "source"
-    extractCSV "organism"
+    # extractCSV "organism"
     extractCSV "user"
     extractCSV "acquisition_framework"
     extractCSV "dataset"
@@ -94,7 +94,14 @@ function main() {
 
 function createDb() {
     printMsg "Drop database ${db_name} if exists"
-    dropdb --if-exists "${db_name}"
+    # Remove previously loaded database
+    if psql --username "${db_user}" -lqt | cut -d \| -f 1 | grep -qw "${db_name}"; then
+        psql --username "${db_user}" --dbname "${db_name}" --command \
+            "SELECT pg_terminate_backend(pg_stat_activity.pid)
+            FROM pg_stat_activity
+            WHERE pg_stat_activity.datname = '${db_name}' AND pid <> pg_backend_pid();"
+        dropdb --username "${db_user}" --echo --if-exists "${db_name}"
+    fi
     printMsg "Create database ${db_name}"
     createdb -T template0 "${db_name}"
 }
@@ -133,7 +140,7 @@ function createExtensions() {
 function createExtension() {
     local extensionName="${1,,}"
     printMsg "Create extension ${extensionName}"
-    psql -d ${db_name} -c "create extension ${extensionName};"
+    psql --dbname ${db_name} --command "CREATE EXTENSION ${extensionName};"
 }
 
 function restoreSchemas() {
@@ -147,40 +154,49 @@ function restoreSchemas() {
 function restoreSchema() {
     local schemaName="${1,,}"
     printMsg "Restore schema ${schemaName}"
-    pg_restore -h ${db_host} -p ${db_port} -U ${db_user} -d ${db_name} \
-    --jobs ${pg_restore_jobs} -v \
-    "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}.dump" \
-    2>&1 | tee "${schemaName}_${si_cbn_import_date//-/}_pgrestore.log"
+
+    if [[ ${schemaName} = "sinp" ]]; then
+        PGPASSWORD=${db_pass} psql --host ${db_host} --username ${db_user} --dbname ${db_name} \
+        --command "CREATE SCHEMA ${schemaName}"
+    fi
+
+    set +e
+    PGPASSWORD=${db_pass} pg_restore --host ${db_host} --port ${db_port} --username ${db_user} \
+    --dbname ${db_name} \
+    --jobs ${pg_restore_jobs} --verbose \
+    "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}.dump"
+    set -e
 }
 
 function addUtilsfunctions() {
     printMsg "Adding utils functions"
-    psql -d "${db_name}" \
+    psql --dbname "${db_name}" \
         -f "${root_dir}/simethis/data/sql/utils.sql"
 }
 
 function extractCSV() {
     local csvFileName="${1,,}"
     printMsg "Extract CSV file ${csvFileName}"
+    echo "${raw_dir}/cbna_agent.csv"
 
-    if [${csvFileName} = "organism"] || [${csvFileName} = "synthese"]; then
-        psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
-        -f "${root_dir}/simethis/data/sql/${csvFileName}.sql"
+    if [[ ${csvFileName} = "organism"] || [${csvFileName} = "synthese" ]]; then
+        PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
+        --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
-        sudo mv /tmp/${csvFileName}.csv ${raw_dir}/
+        sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
     fi
 
-    if ${csvFileName} = "user"; then
-        psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
-        -v cbnaAgentCsvFilePath="${root_dir}/simethis/data/raw/cbna_agent.csv" \
-        -f "${root_dir}/simethis/data/sql/${csvFileName}.sql"
+    if [[ ${csvFileName} = "user" ]]; then
+        PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
+        --dbname ${db_name} -v cbnaAgentCsvFilePath="${raw_dir}/cbna_agent.csv" \
+        -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
-        sudo mv /tmp/${csvFileName}.csv ${raw_dir}/
+        sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
     fi
 
-    psql --no-psqlrc -h ${db_host} -U ${db_user} -d ${db_name} \
-    -f "${root_dir}/simethis/data/sql/${csvFileName}.sql" \
-    > "${raw_dir}/${csvFileName}.csv"
+    PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
+    --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql" \
+    > "${csv_folder}/${csvFileName}.csv"
 }
 
 main "${@}"
