@@ -1,0 +1,11 @@
+.vscode/
+venv/
+data/raw/*.csv
+data/raw/*.tar.bz2
+var/
+logs/
+log/
+settings.ini
+*.log
+*.tmp.sql
+gn2pg/config/*_config.toml
