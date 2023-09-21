@@ -76,6 +76,5 @@ WHERE (r.meta_id_groupe = 1
 ) TO '/tmp/organism.csv' WITH(format csv, header, delimiter E'\t', null '\N');
 ;
 
-DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
 
 
