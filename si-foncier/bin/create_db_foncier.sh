@@ -59,8 +59,7 @@ function main() {
     # Init script
     initScript "${@}"
     parseScriptOptions "${@}"
-    loadModuleDefaultConfig "${setting_file_path-}"
-    loadModuleUserConfig "${setting_file_path-}"
+    loadScriptConfig "${setting_file_path-}"
     redirectOutput "${log_file}"
     local readonly commands=("7za" "psql" "dropdb" "createdb" "unzip")
     checkBinary "${commands[@]}"
