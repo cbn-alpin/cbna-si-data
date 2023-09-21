@@ -61,7 +61,7 @@ function main() {
     parseScriptOptions "${@}"
     loadModuleDefaultConfig "${setting_file_path-}"
     loadModuleUserConfig "${setting_file_path-}"
-    redirectOutput "${sifo_log_imports}"
+    redirectOutput "${log_file}"
     local readonly commands=("7za" "psql" "dropdb" "createdb" "unzip")
     checkBinary "${commands[@]}"
 
