@@ -71,34 +71,72 @@ COPY (
                 ELSE ter.cd_nomenclature
               END, 'Métropole']] 
         AS cor_territory,
-        (ARRAY[ARRAY[COALESCE(pri.uuid_national, pri.permid::CHARACTER VARYING), '1'::CHARACTER VARYING]] || -- Contact principal
-            CASE
-                WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[COALESCE(fi.uuid_national, fi.permid::CHARACTER VARYING), '2'::CHARACTER VARYING] -- Financeur
-                ELSE NULL::CHARACTER VARYING[]
-            END) ||
-            CASE
-                WHEN jd.acteur_metadata IS NOT NULL THEN ARRAY[COALESCE(fo.uuid_national, fo.permid::CHARACTER VARYING), '5'::CHARACTER VARYING] -- Fournisseur
-                ELSE NULL::CHARACTER VARYING[]
-            END ||
-            CASE
-                WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[COALESCE(pro.uuid_national, pro.permid::CHARACTER VARYING), '6'::CHARACTER VARYING] -- Producteur
-                ELSE NULL::CHARACTER VARYING[]
-            END
-        AS cor_actors_organism,
-        (ARRAY[ARRAY[upri.permid::CHARACTER VARYING, '1'::CHARACTER VARYING]] || -- Contact principal
-	        CASE
-	            WHEN jd.acteur_financeur IS NOT NULL THEN ARRAY[ufi.permid::CHARACTER VARYING, '2'::CHARACTER VARYING] -- Financeur
-	            ELSE NULL::CHARACTER VARYING[]
-	        END) ||
-	        CASE
-	            WHEN jd.acteur_metadata IS NOT NULL THEN ARRAY[ufo.permid::CHARACTER VARYING, '5'::CHARACTER VARYING] -- Fournisseur
-	            ELSE NULL::CHARACTER VARYING[]
-	        END ||
-	        CASE
-	            WHEN jd.acteur_producteur IS NOT NULL THEN ARRAY[upro.permid::CHARACTER VARYING, '6'::CHARACTER VARYING] -- Producteur
-	            ELSE NULL::CHARACTER VARYING[]
-	        END
-        AS cor_actors_user,
+        ARRAY[
+    		CASE 
+    			WHEN jd.acteur_principal IS NOT NULL
+    				THEN ARRAY [COALESCE(
+						(CASE
+							WHEN lower(pri.uuid_national) ~* '^\s*$'
+								THEN NULL 
+							WHEN lower(pri.uuid_national) IS NOT NULL 
+								AND pri.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+								THEN lower(pri.uuid_national)
+						ELSE NULL
+						END),
+					pri.permid::varchar
+					), '1'] -- Contact principal
+    		ELSE NULL::varchar[]
+    		END] ||
+    		CASE 
+    			WHEN jd.acteur_financeur IS NOT NULL
+    				THEN ARRAY [COALESCE(
+						(CASE
+							WHEN lower(fi.uuid_national) ~* '^\s*$'
+								THEN NULL 
+							WHEN lower(fi.uuid_national) IS NOT NULL 
+								AND fi.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+								THEN lower(fi.uuid_national)
+						ELSE NULL
+						END),
+					fi.permid::varchar
+					), '2'] -- Financeur
+    		ELSE NULL::varchar[]
+    		END ||
+    		CASE 
+    			WHEN jd.acteur_metadata IS NOT NULL
+    				THEN ARRAY [COALESCE(
+						(CASE
+							WHEN lower(fo.uuid_national) ~* '^\s*$'
+								THEN NULL 
+							WHEN lower(fo.uuid_national) IS NOT NULL 
+								AND fo.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+								THEN lower(fo.uuid_national)
+						ELSE NULL
+						END),
+					fo.permid::varchar
+					), '5'] -- Fournisseur
+    		ELSE NULL::varchar[]
+    		END ||
+    		CASE 
+    			WHEN jd.acteur_producteur IS NOT NULL
+    				THEN ARRAY [COALESCE(
+						(CASE
+							WHEN lower(pro.uuid_national) ~* '^\s*$'
+								THEN NULL 
+							WHEN lower(pro.uuid_national) IS NOT NULL 
+								AND pro.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+								THEN lower(pro.uuid_national)
+						ELSE NULL
+						END),
+					pro.permid::varchar
+					), '6'] -- producteur
+    		ELSE NULL::varchar[]
+    		END AS cor_actors_organism,
+		CASE 
+			WHEN jd.acteur_principal = 2785
+				THEN ARRAY[ARRAY[lower('4690f8e2-78da-4d6b-9c63-6c506c45a50b'), '1']] -- Contact principal JMG
+	        ELSE NULL
+		END AS cor_actors_user,
         jsonb_build_object(
             'idUserCreationJdd',jd.id_user_creation_jdd, 'methodCollect', jd.method_collect
         )::jsonb AS additional_data,
@@ -136,4 +174,5 @@ COPY (
 WITH (format csv, header, delimiter E'\t', null '\N')
 ;
      
-     
+ DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
+    
