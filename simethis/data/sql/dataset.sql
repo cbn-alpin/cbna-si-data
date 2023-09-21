@@ -158,6 +158,8 @@ COPY (
         LEFT JOIN sinp.metadata_ref ori ON jd.data_origine = ori.id_nomenclature
         LEFT JOIN sinp.metadata_ref sta ON jd.statut_source = sta.id_nomenclature
         LEFT JOIN sinp.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
+        LEFT JOIN flore.permid_organism_uuid_duplicates poud on poud.id_org = jd.acteur_principal
+            or poud.id_org = jd.acteur_financeur or poud.id_org = jd.acteur_metadata or poud.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme pri ON pri.id_org = jd.acteur_principal
         LEFT JOIN referentiels.organisme pro ON pro.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme fi ON fi.id_org = jd.acteur_financeur
@@ -170,9 +172,7 @@ COPY (
     --     LEFT JOIN suivi_uuid su ON jd.uuid_jdd = su.permid,
     --    date_der_exp
     --  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
-) TO stdout
-WITH (format csv, header, delimiter E'\t', null '\N')
-;
+) TO '/tmp/dataset.csv' WITH(format csv, header, delimiter E'\t', null '\N');
      
- DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
+DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
     
