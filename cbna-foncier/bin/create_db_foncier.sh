@@ -61,7 +61,7 @@ function main() {
     parseScriptOptions "${@}"
     loadModuleDefaultConfig "${setting_file_path-}"
     loadModuleUserConfig "${setting_file_path-}"
-    redirectOutput "${cbna_log_imports}"
+    redirectOutput "${sifo_log_imports}"
     local readonly commands=("7za" "psql" "dropdb" "createdb" "unzip")
     checkBinary "${commands[@]}"
 
@@ -84,24 +84,24 @@ function initDB() {
     dropdb --if-exists "${db_name}"
 
     printMsg "Create db"
-    createdb -E UTF8 -O "${db_user}" "${db_name}"
+    createdb --encoding UTF8 --owner "${db_user}" "${db_name}"
 
     printMsg "create extension postgis & postgis_topology"
-    psql "${db_name}" -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
+    psql "${db_name}" --command "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
 }
 
 function extractArchive() {
     printMsg "Extract import data CSV files..."
 
     cd "${raw_dir}/"
-    unzip "${raw_dir}/${cbna_folder_archive}.zip"
+    unzip "${raw_dir}/${sifo_folder_archive}.zip"
 
-    cd "${raw_dir}/${cbna_folder_archive}/"
+    cd "${raw_dir}/${sifo_folder_archive}/"
     for archive in *.7z.001 ; do
         7za x "$archive"
     done
 
-    cd "${raw_dir}/${cbna_folder_archive}/"
+    cd "${raw_dir}/${sifo_folder_archive}/"
     for archive in *.7z ; do
         7za x "$archive" -o*
     done
@@ -111,8 +111,8 @@ function extractArchive() {
 function restoreData() {
     printMsg "Import data into database..."
 
-    find "${raw_dir}/${cbna_folder_archive}/" -type f -name "*.sql" -print0 | while read -d $'\0' file ; do
-        psql -h "${db_host}" -p "${db_port}" -U "${db_user}" -d "${db_name}" -f "${file}"
+    find "${raw_dir}/${sifo_folder_archive}/" -type f -name "*.sql" -print0 | while read -d $'\0' file ; do
+        psql --host "${db_host}" --port "${db_port}" --username "${db_user}" --dbname "${db_name}" --file "${file}"
     done
 }
 
