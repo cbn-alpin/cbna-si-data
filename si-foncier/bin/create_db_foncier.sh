@@ -92,19 +92,26 @@ function initDB() {
 function extractArchive() {
     printMsg "Extract import data CSV files..."
 
-    cd "${raw_dir}/"
-    unzip "${raw_dir}/${sifo_folder_archive}.zip"
+    if [[ -f "${raw_dir}/${sifo_folder_archive}.zip" ]]; then
+        if [[ ! -d "${raw_dir}/${sifo_folder_archive}/" ]]; then
+            cd "${raw_dir}/"
+            unzip "${raw_dir}/${sifo_folder_archive}.zip"
 
-    cd "${raw_dir}/${sifo_folder_archive}/"
-    for archive in *.7z.001 ; do
-        7za x "$archive"
-    done
+            cd "${raw_dir}/${sifo_folder_archive}/"
+            for archive in *.7z.001 ; do
+                7za x "$archive"
+            done
 
-    cd "${raw_dir}/${sifo_folder_archive}/"
-    for archive in *.7z ; do
-        7za x "$archive" -o*
-    done
-
+            cd "${raw_dir}/${sifo_folder_archive}/"
+            for archive in *.7z ; do
+                7za x "$archive" -o*
+            done
+        else
+            printVerbose "Zip file already extracted." ${Gra}
+        fi
+    else
+        printVerbose "Zip file ${sifo_folder_archive}.zip not exists in ${raw_dir}." ${Gra}
+    fi
 }
 
 function restoreData() {
