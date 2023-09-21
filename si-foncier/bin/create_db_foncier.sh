@@ -79,11 +79,9 @@ function main() {
 }
 
 function initDB() {
-    printMsg "drop db if exists"
-    dropdb --if-exists "${db_name}"
 
-    printMsg "Create db"
-    createdb --encoding UTF8 --owner "${db_user}" "${db_name}"
+    prinMsg "drop schema if exists"
+    psql "${db_name}" --command "DROP SCHEMA IF EXISTS ${db_name}.ff2022_dep;"
 
     printMsg "create extension postgis & postgis_topology"
     psql "${db_name}" --command "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_topology;"
