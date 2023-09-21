@@ -86,7 +86,7 @@ function initDB() {
     createdb --encoding UTF8 --owner "${db_user}" "${db_name}"
 
     printMsg "create extension postgis & postgis_topology"
-    psql "${db_name}" --command "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
+    psql "${db_name}" --command "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 }
 
 function extractArchive() {
