@@ -80,9 +80,6 @@ function main() {
 
 function initDB() {
 
-    prinMsg "drop schema if exists"
-    psql "${db_name}" --command "DROP SCHEMA IF EXISTS ${db_name}.ff2022_dep;"
-
     printMsg "create extension postgis & postgis_topology"
     psql "${db_name}" --command "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 }
@@ -116,6 +113,7 @@ function restoreData() {
     printMsg "Import data into database..."
 
     find "${raw_dir}/${sifo_folder_archive}/" -type f -name "*.sql" -print0 | while read -d $'\0' file ; do
+        export PGPASSWORD="${db_pass}"; \
         psql --host "${db_host}" --port "${db_port}" --username "${db_user}" --dbname "${db_name}" --file "${file}"
     done
 }
