@@ -179,7 +179,7 @@ function extractCSV() {
     printMsg "Extract CSV file ${csvFileName}"
     echo "${raw_dir}/cbna_agent.csv"
 
-    if [[ ${csvFileName} = "organism"] || [${csvFileName} = "synthese" ]]; then
+    if [[ ${csvFileName} = "organism"] || [${csvFileName} = "synthese" || [${csvFileName} = "dataset" ]]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
         --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
