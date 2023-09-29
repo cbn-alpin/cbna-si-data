@@ -17,64 +17,100 @@ VALUES ('ab8a47df-1cf0-4206-8307-5ef8a65cb8db', '3089', 'Société Botanique de 
 	   ('82568af7-b02a-437f-9ff6-dbb0f4ad0330', '10099', 'Syndicat intercommunal du Vuache'),
 	   ('8a2a3558-5150-41a0-b850-0802e5c3e392', '3179', 'Université Joseph Fourier'),
 	   ('e254dcb1-42b1-455f-a7d9-9cb9d50bf66f', '10286', 'Direction Départementale de lAgriculture et de la Forêt 05');
+	   
 COPY (
+	WITH 
+		all_id_orgs_export AS( 
+			SELECT DISTINCT(id_org)
+			id_org 
+			FROM referentiels.organisme o
+				JOIN sinp.metadata_jdd mjorg 
+					ON (mjorg.acteur_principal = o.id_org 
+						OR mjorg.acteur_metadata = o.id_org
+						OR mjorg.acteur_producteur = o.id_org 
+						OR mjorg.acteur_financeur = o.id_org 
+					)	
+				LEFT JOIN flore.releve r 
+					ON r.id_jdd = mjorg.id_jdd
+			WHERE
+				r.meta_id_groupe = 1
+					OR (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74'))
+					
+			UNION
+			
+			SELECT DISTINCT(id_org)
+			id_org
+			FROM referentiels.organisme o
+				JOIN flore.releve r 
+					ON (r.id_org_f = o.id_org
+						OR r.id_org_obs1 = o.id_org
+						OR r.id_org_obs2 = o.id_org
+						OR r.id_org_obs3 = o.id_org
+						OR r.id_org_obs4 = o.id_org
+						OR r.id_org_obs5 = o.id_org
+					)
+			WHERE
+				r.meta_id_groupe = 1
+					OR (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74'))
+	)
+
 SELECT DISTINCT ON (unique_id)
-	lower(COALESCE(
+	COALESCE(
 		(CASE
-			WHEN ov.uuid_national ~* '^\s*$'
+			WHEN lower(o.uuid_national) ~* '^\s*$'
 				THEN NULL 
-			WHEN ov.uuid_national IS NOT NULL 
-				AND ov.permid NOT IN (SELECT permid FROM flore.permid_organism_uuid_duplicates)
-				THEN ov.uuid_national
+			WHEN lower(o.uuid_national) IS NOT NULL 
+				AND o.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+				THEN lower(o.uuid_national)
 			ELSE NULL
 		 END),
-		 ov.permid::varchar
-	))::uuid AS unique_id,
-	ov.nom AS "name",
-	ov.adresse AS adress,
-	public.delete_space(ov.cp) AS postal_code,
-	public.delete_space(ov.ville) AS city,
-	LEFT(public.delete_space(ov.tel),14) AS phone,
+		 o.permid::varchar
+	)::uuid AS unique_id,
+	o.nom AS "name",
+	o.adresse AS adress,
+	public.delete_space(o.cp) AS postal_code,
+	public.delete_space(o.ville) AS city,
+	LEFT(public.delete_space(o.tel),14) AS phone,
 	NULL::bpchar AS fax,
-	public.delete_space(ov.email) AS email,
-	public.delete_space(ov.web) AS url,
+	public.delete_space(o.email) AS email,
+	public.delete_space(o.web) AS url,
 	NULL::bpchar AS logo_url,
 	jsonb_strip_nulls(
 		CASE
-        	WHEN ov.id_org IS NOT NULL
+        	WHEN o.id_org IS NOT NULL
         		THEN jsonb_build_object('infoSup',
-        			jsonb_build_object(
-        				'idOrg', ov.id_org,
-        				'code', ov.code,
-        				'pays', ov.pays,
-        				'sinpDspublique', ov.sinp_dspublique,
-        				'metaIdGroupe', ov.meta_id_groupe,
-        				'comm', ov.comm,
-        				'permid', ov.permid,
-        				'fichier1', ov.fichier1)				
-        				)
+        			 jsonb_build_object(
+        				'idOrg', o.id_org,
+        				'code', o.code,
+        				'pays', o.pays,
+        				'sinpDspublique', o.sinp_dspublique,
+        				'metaIdGroupe', o.meta_id_groupe,
+        				'comm', o.comm,
+        				'permid', o.permid,
+        				'fichier1', o.fichier1
+        			)				
+        		)
         	ELSE jsonb_build_object('infoSup', null)
         	END ||
         CASE
-			WHEN ov.uuid_national ~* '^\s*$' OR  ov.uuid_national IS NULL 
+			WHEN o.uuid_national ~* '^\s*$' OR  o.uuid_national IS NULL 
 			THEN jsonb_build_object('is_uuid_national', false)
 			ELSE jsonb_build_object('is_uuid_national', TRUE)
         END::jsonb) AS additional_data,	
-	ov.meta_date_saisie::timestamp AS meta_create_date,
+	o.meta_date_saisie::timestamp AS meta_create_date,
 		CASE 
-	    	WHEN ov.meta_date_maj IS NOT NULL OR ov.meta_date_maj::varchar !~* '^\s*$'
-	    		THEN ov.meta_date_maj::timestamp
+	    	WHEN o.meta_date_maj IS NOT NULL OR o.meta_date_maj::varchar !~* '^\s*$'
+	    		THEN o.meta_date_maj::timestamp
 	    	ELSE NULL
 	    END AS meta_update_date,
 	'I' AS meta_last_action
-	FROM referentiels.organisme ov
-JOIN flore.releve r ON r.id_org_f = ov.id_org
-	OR r.id_org_obs1 = ov.id_org OR r.id_org_obs2 = ov.id_org OR r.id_org_obs3 = ov.id_org OR r.id_org_obs4 = ov.id_org OR r.id_org_obs5 = ov.id_org
-WHERE (r.meta_id_groupe = 1
-	OR  (r.meta_id_groupe <> 1
-	AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
-) TO '/tmp/organism.csv' WITH(format csv, header, delimiter E'\t', null '\N');
+FROM referentiels.organisme o
+	JOIN all_id_orgs_export a ON a.id_org = o.id_org
+WHERE o.id_org IN(a.id_org)
+
+) TO '/tmp/organism.csv' WITH(format csv, header, delimiter E'\t', null '\N')
 ;
+
 
 
 
