@@ -179,7 +179,7 @@ function extractCSV() {
     printMsg "Extract CSV file ${csvFileName}"
     echo "${raw_dir}/cbna_agent.csv"
 
-    if [[ ${csvFileName} = "organism"] || [${csvFileName} = "synthese" || [${csvFileName} = "dataset" ]]; then
+    if [[${csvFileName} = "synthese"]]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
         --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
@@ -189,6 +189,14 @@ function extractCSV() {
     if [[ ${csvFileName} = "user" ]]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
         --dbname ${db_name} -v cbnaAgentCsvFilePath="${raw_dir}/cbna_agent.csv" \
+        -f "${sql_dir}/${csvFileName}.sql"
+        sudo chown ${db_user} /tmp/${csvFileName}.csv
+        sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
+    fi
+
+    if [[ ${csvFileName} = "organism" ] || [ ${csvFileName} = "dataset" ]]; then
+        PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
+        --dbname ${db_name} -v organismsDuplicatesCsvFilePath="${raw_dir}/permid_organism_uuid_duplicates.csv" \
         -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
         sudo mv /tmp/${csvFileName}.csv ${csv_folder}/

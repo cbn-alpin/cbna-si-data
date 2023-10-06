@@ -1,3 +1,19 @@
+-- In order to list the duplicates of the uuid_national of the organism table, we created a query linked below
+-- https://wiki-intranet.cbn-alpin.fr/projets/feder-si/migration-simethis-geonature#requete_permettant_de_lister_les_doublons_des_uuid_national_des_organismes
+
+CREATE TABLE flore.permid_organism_uuid_duplicates(
+	gid serial PRIMARY KEY,
+	permid uuid,
+	id_org smallserial,
+	"name" varchar
+);
+
+-- Insert datas from CSV file to table
+COPY flore.permid_organism_uuid_duplicates(permid, id_org, "name")
+	FROM :organismsDuplicatesCsvFilePath
+DELIMITER ','
+CSV HEADER;
+
 COPY (
     WITH 
         list_jdd AS (
@@ -134,7 +150,7 @@ COPY (
     		END AS cor_actors_organism,
 		CASE 
 			WHEN jd.acteur_principal = 2785
-				THEN ARRAY[ARRAY[lower('4690f8e2-78da-4d6b-9c63-6c506c45a50b'), '1']] -- Contact principal JMG
+				THEN ARRAY[ARRAY[lower('e76d8558-903a-5142-8d75-16027401c3b3'), '1']] -- Contact principal JMG
 	        ELSE NULL
 		END AS cor_actors_user,
         jsonb_build_object(

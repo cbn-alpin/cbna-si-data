@@ -39,14 +39,14 @@ psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/g
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_modifs.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_modifs.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/source.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/source.csv
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/organism.sql"
+psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v organismsDuplicatesCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/permid_organism_uuid_duplicates.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/organism.sql"
 sudo chown cbionda /tmp/organism.csv
 sudo mv /tmp/organism.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v cbnaAgentCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/raw/cbna_agent.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/user.sql"
+psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v cbnaAgentCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/cbna_agent.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/user.sql"
 sudo chown cbionda /tmp/user.csv
 sudo mv /tmp/user.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/acquisition_framework.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/acquisition_framework.csv
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/dataset.sql"
+psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v organismsDuplicatesCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/permid_organism_uuid_duplicates.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/dataset.sql"
 sudo chown cbionda /tmp/dataset.csv
 sudo mv /tmp/dataset.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/synthese.sql"

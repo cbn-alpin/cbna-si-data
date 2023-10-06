@@ -6,18 +6,14 @@ CREATE TABLE flore.permid_organism_uuid_duplicates(
 	permid uuid,
 	id_org smallserial,
 	"name" varchar
-);	
-INSERT INTO flore.permid_organism_uuid_duplicates(
-	permid,
-	id_org,
-	"name"
-)
-VALUES ('ab8a47df-1cf0-4206-8307-5ef8a65cb8db', '3089', 'Société Botanique de Lyon'), 
-	   ('77304c59-6a03-48ba-b8e2-2926aaf1f39c', '10219', 'CBN du Massif Central (CHLORIS)'),
-	   ('82568af7-b02a-437f-9ff6-dbb0f4ad0330', '10099', 'Syndicat intercommunal du Vuache'),
-	   ('8a2a3558-5150-41a0-b850-0802e5c3e392', '3179', 'Université Joseph Fourier'),
-	   ('e254dcb1-42b1-455f-a7d9-9cb9d50bf66f', '10286', 'Direction Départementale de lAgriculture et de la Forêt 05');
-	   
+);
+
+-- Insert datas from CSV file to table
+COPY flore.permid_organism_uuid_duplicates(permid, id_org, "name")
+	FROM :organismsDuplicatesCsvFilePath
+DELIMITER ','
+CSV HEADER;
+
 COPY (
 	WITH 
 		all_id_orgs_export AS( 
@@ -110,6 +106,8 @@ WHERE o.id_org IN(a.id_org)
 
 ) TO '/tmp/organism.csv' WITH(format csv, header, delimiter E'\t', null '\N')
 ;
+
+DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
 
 
 
