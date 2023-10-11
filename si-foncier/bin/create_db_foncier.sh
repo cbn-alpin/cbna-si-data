@@ -70,7 +70,7 @@ function main() {
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
     initDB
-    extractArchive
+    extractArchive "${raw_dir}"
     restoreData
 
     #+----------------------------------------------------------------------------------------------------------+
@@ -87,32 +87,43 @@ function initDB() {
 function extractArchive() {
     printMsg "Extract import data CSV files..."
 
-    if [[ ! -d "${raw_dir}/${sifo_folder_archive}/" ]]; then
-        if [[ -f "${raw_dir}/${sifo_folder_archive}.zip" ]]; then
-            cd "${raw_dir}/"
-            unzip "${raw_dir}/${sifo_folder_archive}.zip"
+    local dir="$1"
 
-            cd "${raw_dir}/${sifo_folder_archive}/"
-            for archive in *.7z.001 ; do
-                7za x "$archive"
-            done
-
-            cd "${raw_dir}/${sifo_folder_archive}/"
-            for archive in *.7z ; do
-                7za x "$archive" -o*
-            done
-        else
-            printVerbose "Zip file ${sifo_folder_archive}.zip not exists in ${raw_dir}." ${Gra}
-        fi
-    else
-        printVerbose "Zip file already extracted." ${Gra}
+    # Check if the directory exists
+    if [ ! -d "$dir" ]; then
+        echo "Directory '$dir' does not exist."
+        return 1
     fi
+
+
+    # Loop through all archive files in the directory
+    find "$dir" -type f \( -name "*.tar" -o -name "*.tar.gz" -o -name "*.tgz" -o -name "*.tar.bz2" -o -name "*.tar.xz" -o -name "*.zip" -o -name "*.7z.001" -o -name "*.7z" \) -exec sh -c '
+        for archive do
+            if [ ! -d "${archive%.*}" ]; then
+                # Determine the archive format and extract accordingly
+                if [ "${archive##*.}" = "zip" ]; then
+                    unzip "$archive" -d "${archive%.*}"
+                    cd ${archive%.*}
+                    for archive in */; do
+                        7za x "$archive"
+                    done
+                    for archive in *.7z; do
+                        7za x "$archive" -o*
+                    done
+                else 
+                    tar xf "$archive" -C "${archive%.*}"
+                fi
+            else
+                echo "Zip file already extracted." ${Gra}
+            fi
+        done
+    ' sh {} +
 }
 
 function restoreData() {
     printMsg "Import data into database..."
 
-    find "${raw_dir}/${sifo_folder_archive}/" -type f -name "*.sql" -print0 | while read -d $'\0' file ; do
+    find "${raw_dir}/" -type f -name "*.sql" -print0 | while read -d $'\0' file ; do
         export PGPASSWORD="${db_pass}"; \
         psql --host "${db_host}" --port "${db_port}" --username "${db_user}" --dbname "${db_name}" --file "${file}"
     done
