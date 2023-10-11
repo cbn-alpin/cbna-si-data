@@ -81,7 +81,7 @@ function main() {
     extractCSV "taxref"
     extractCSV "taxref_modifs"
     extractCSV "source"
-    # extractCSV "organism"
+    extractCSV "organism"
     extractCSV "user"
     extractCSV "acquisition_framework"
     extractCSV "dataset"
@@ -157,15 +157,22 @@ function restoreSchema() {
 
     if [[ ${schemaName} = "sinp" ]]; then
         PGPASSWORD=${db_pass} psql --host ${db_host} --username ${db_user} --dbname ${db_name} \
-        --command "CREATE SCHEMA ${schemaName}"
-    fi
+        --command "CREATE SCHEMA IF NOT EXISTS ${schemaName}"
 
-    set +e
-    PGPASSWORD=${db_pass} pg_restore --host ${db_host} --port ${db_port} --username ${db_user} \
-    --dbname ${db_name} \
-    --jobs ${pg_restore_jobs} --verbose \
-    "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}.dump"
-    set -e
+        set +e
+        PGPASSWORD=${db_pass} pg_restore --host ${db_host} --port ${db_port} --username ${db_user} \
+        --dbname ${db_name} \
+        --jobs ${pg_restore_jobs} --verbose \
+        "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}"
+        set -e
+    else 
+        set +e
+        PGPASSWORD=${db_pass} pg_restore --host ${db_host} --port ${db_port} --username ${db_user} \
+        --dbname ${db_name} \
+        --jobs ${pg_restore_jobs} --verbose \
+        "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}.dump"
+        set -e
+    fi
 }
 
 function addUtilsfunctions() {
@@ -177,34 +184,31 @@ function addUtilsfunctions() {
 function extractCSV() {
     local csvFileName="${1,,}"
     printMsg "Extract CSV file ${csvFileName}"
-    echo "${raw_dir}/cbna_agent.csv"
 
-    if [[${csvFileName} = "synthese"]]; then
+    if [[ ${csvFileName} = "synthese" ]]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
         --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
         sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
-    fi
 
-    if [[ ${csvFileName} = "user" ]]; then
+    elif [[ ${csvFileName} = "user" ]]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
-        --dbname ${db_name} -v cbnaAgentCsvFilePath="${raw_dir}/cbna_agent.csv" \
+        --dbname ${db_name} -v cbnaAgentCsvFilePath="'${data_dir}/csv/cbna_agent.csv'" \
         -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
         sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
-    fi
 
-    if [[ ${csvFileName} = "organism" ] || [ ${csvFileName} = "dataset" ]]; then
+    elif [ ${csvFileName} = "organism" ] || [ ${csvFileName} = "dataset" ]; then
         PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
-        --dbname ${db_name} -v organismsDuplicatesCsvFilePath="${raw_dir}/permid_organism_uuid_duplicates.csv" \
+        --dbname ${db_name} -v organismsDuplicatesCsvFilePath="'${data_dir}/csv/permid_organism_uuid_duplicates.csv'" \
         -f "${sql_dir}/${csvFileName}.sql"
         sudo chown ${db_user} /tmp/${csvFileName}.csv
         sudo mv /tmp/${csvFileName}.csv ${csv_folder}/
-    fi
 
-    PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
+    else PGPASSWORD=${db_pass} psql --no-psqlrc --host ${db_host} --username ${db_user} \
     --dbname ${db_name} -f "${sql_dir}/${csvFileName}.sql" \
     > "${csv_folder}/${csvFileName}.csv"
+    fi
 }
 
 main "${@}"
