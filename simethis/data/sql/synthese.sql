@@ -261,8 +261,8 @@ COPY (
 				THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
 		ELSE '{"lieudit": null}'
 		END::varchar(500) AS place_name,
-		st_geomfromtext(
-	--  st_geomfromewkt(  
+	--st_geomfromtext(
+	  st_geomfromewkt(  
 		CASE
 				WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) -- P : Pointage précis
 				WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
@@ -274,7 +274,8 @@ COPY (
 				WHEN 'P'::bpchar THEN 10
 				WHEN 'T'::bpchar THEN 800
 				ELSE NULL
-			END) AS "precision",  
+			END) AS "precision",
+	NULL AS id_area_attachment,
 	r.date_releve_deb::timestamp AS date_min,
 	r.date_releve_fin::timestamp AS date_max,
 		CASE
@@ -341,7 +342,7 @@ COPY (
 			END::jsonb||
 			jsonb_build_object('cd_nom', o.cd_nom)
 			)
-	AS additionnal_data,
+	AS additional_data,
 	r.meta_date_saisie::timestamp AS meta_create_date,
 	GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
 	'I' AS meta_last_action 
@@ -367,7 +368,7 @@ COPY (
 	WHERE
 		(r.meta_id_groupe = 1
 			OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))	
-	LIMIT 1000
+	LIMIT 10000
 
 ) TO '/tmp/synthese.csv' WITH(format csv, header, delimiter E'\t', null '\N');
 
