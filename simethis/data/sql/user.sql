@@ -201,7 +201,7 @@ COPY (
 				u.meta_date_maj::timestamp AS meta_update_date,
 				'I'::char(1) AS meta_last_action
 			FROM applications.utilisateur u
-			JOIN referentiels.organisme o ON o.id_org = u.id_org 
+			LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
 			WHERE u.id_groupe = 1 
 			)
 	
@@ -223,14 +223,20 @@ COPY (
 					'idGroupe', u.id_groupe, 
 					'password', u.pass, 
 					'lastLogin', u.last_login, 
-					'key', u."key"
+					'key', u."key",
+					'users', jsonb_build_object('VANDERPERT Héloïse', 'u.id_user = 21',
+						'SAUTREAU Catherine', 'u.id_user = 47',
+						'BARCELLI Martine', 'u.id_user = 394',
+						'CASIEZ Christine', 'u.id_user = 75',
+						'NOBLE Virgile', 'u.id_user = 4'
+					)
 				)::jsonb AS additional_data,
 				u.meta_date_saisie::timestamp AS meta_create_date,
 				u.meta_date_maj::timestamp AS meta_update_date,
 				'I'::char(1) AS meta_last_action
 			FROM applications.utilisateur u
 			JOIN flore.releve r ON r.meta_id_user_saisie  = u.id_user
-			JOIN referentiels.organisme o ON o.id_org = u.id_org 
+			LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
 			WHERE
 				r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') 
 			)
