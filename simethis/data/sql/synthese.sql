@@ -154,7 +154,7 @@ COPY (
 			WHERE rt.id_reglementation ILIKE '%SENSI_AURA_%'
 			GROUP BY rt.cd_ref, ("right"(rt.id_reglementation::text, 2))
 			)
-	SELECT 
+	SELECT DISTINCT ON (unique_id_sinp)
 	o.id_observation_sinp AS unique_id_sinp,
 	r.id_releve_sinp AS unique_id_sinp_grp,
 	o.id_observation::varchar(25) AS source_id,
@@ -261,7 +261,6 @@ COPY (
 				THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
 		ELSE '{"lieudit": null}'
 		END::varchar(500) AS place_name,
-	--st_geomfromtext(
 	  st_geomfromewkt(  
 		CASE
 				WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) -- P : Pointage précis
