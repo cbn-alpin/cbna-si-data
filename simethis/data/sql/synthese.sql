@@ -190,7 +190,7 @@ COPY (
 	o.valid_reg::varchar(25) AS code_nomenclature_valid_status,
 		CASE
 			WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) THEN 5
-		ELSE COALESCE(r.sinp_difnivprec::integer, 0)
+			ELSE COALESCE(r.sinp_difnivprec::integer, 0)
 		END::varchar(25) AS code_nomenclature_diffusion_level,
 	'0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
 		CASE
@@ -239,11 +239,11 @@ COPY (
 		END AS reference_biblio,
 	COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
 	COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
-	CASE
-		WHEN o.cd_ref < 15
-			THEN o.cd_ref + 30000000
-		ELSE o.cd_ref
-	END AS cd_nom,
+		CASE
+			WHEN o.cd_ref < 15
+				THEN o.cd_ref + 30000000
+			ELSE o.cd_ref
+		END AS cd_nom,
 	NULL AS cd_hab,
 		CASE
 			WHEN o.nom_taxon IS NOT NULL
@@ -259,36 +259,41 @@ COPY (
 		CASE
 			WHEN r.lieudit  != '' 
 				THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
-		ELSE '{"lieudit": null}'
+			ELSE '{"lieudit": null}'
 		END::varchar(500) AS place_name,
 	  st_geomfromewkt(  
 		CASE
-				WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) -- P : Pointage précis
-				WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
-					THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
-				ELSE NULL
-			END) AS geom,
+			WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) -- P : Pointage précis
+			WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
+				THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
+			ELSE NULL
+		END) AS geom,
 		COALESCE(r.resolution,
-			CASE r.id_precision
-				WHEN 'P'::bpchar THEN 10
-				WHEN 'T'::bpchar THEN 800
-				ELSE NULL
-			END) AS "precision",
-	NULL AS id_area_attachment,
+		CASE r.id_precision
+			WHEN 'P'::bpchar THEN 10
+			WHEN 'T'::bpchar THEN 800
+			ELSE NULL
+		END) AS "precision",
+		CASE 
+			WHEN r.id_precision ILIKE 'C'
+				THEN concat('COM.', r.insee_comm) 
+			ELSE NULL
+		END AS code_area_attachment,
 	r.date_releve_deb::timestamp AS date_min,
 	r.date_releve_fin::timestamp AS date_max,
 		CASE
 			WHEN o.meta_type_valid::text = 'a_v1'::text THEN NULL
 			ELSE concat(concat_ws(' '::text, val.nom, val.prenom), ' (', COALESCE(ov.abb, ov.nom, 'Inconnu'::character varying), ')')
 		END AS "validator", 
-		NULL AS validation_comment,
+		NULL
+	AS validation_comment,
 		COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
 	flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
 	concat(
 		CASE 
 			WHEN o.id_det IS NOT NULL 
 				THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
-				ELSE 'INCONNU'
+			ELSE 'INCONNU'
 		END,
 		CASE 
 			WHEN det.email IS NOT NULL AND det.email != '' 
@@ -319,8 +324,8 @@ COPY (
 			public.build_simple_json_object('inseeReg', r.insee_reg) ||
 			CASE
 				WHEN h.nom != ''
-				THEN jsonb_build_object('herbier', jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
-				else jsonb_build_object('herbier', null)    			
+					THEN jsonb_build_object('herbier', jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
+				ELSE jsonb_build_object('herbier', null)    			
 			END ||
 			public.build_simple_json_object('codePerso', r.code_perso) ||
 			public.build_simple_json_object('codeGps', r.code_gps) ||
@@ -332,14 +337,30 @@ COPY (
 			public.build_simple_json_object('metaIdUserSaisie', r.meta_id_user_saisie) ||
 			public.build_simple_json_object('sinpDspublique', r.sinp_dspublique) ||        
 			CASE t.tax_type
-					WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
-					WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT 
-					WHEN 'L'::bpchar THEN '{"taxTypeLabel": "Lichens"}'::text
-					WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
-					WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT 
+				WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
+				WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT 
+				WHEN 'L'::bpchar THEN '{"taxTypeLabel": "Lichens"}'::text
+				WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
+				WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT 
 				ELSE '{"taxType": null}'
 			END::jsonb||
-			jsonb_build_object('cd_nom', o.cd_nom)
+			jsonb_build_object('cd_nom', o.cd_nom) ||
+			CASE 
+				WHEN r.meta_id_user_saisie = 21
+					OR r.meta_id_user_saisie = 47 
+					OR r.meta_id_user_saisie = 394
+					OR r.meta_id_user_saisie = 75
+					OR r.meta_id_user_saisie = 4
+					OR r.meta_id_user_saisie = 40
+					OR r.meta_id_user_saisie = 48
+						THEN jsonb_build_object('digitisers', json_build_object( 
+							'nom', dig.nom, 
+							'prénom', dig.prenom,
+							'email', dig.email,
+							'org', dig.id_org
+							))
+				ELSE jsonb_build_object ('digitisers', null)
+			END
 			)
 	AS additional_data,
 	r.meta_date_saisie::timestamp AS meta_create_date,
