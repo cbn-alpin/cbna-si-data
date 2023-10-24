@@ -127,6 +127,27 @@ END;
 $function$
 ;
 
+-- Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
+CREATE TABLE flore.cbna_agent(
+	gid serial PRIMARY KEY,
+	uuid uuid,
+	last_name varchar(100),
+	first_name varchar(100),
+	entry_date date,
+	release_date date
+);
+
+-- Insert datas from CSV file to table
+COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
+	FROM :cbnaAgentCsvFilePath
+DELIMITER ','
+CSV HEADER;
+
+-- Agent uuid recovery in the table
+UPDATE flore.cbna_agent AS ca
+SET uuid = u.permid
+FROM applications.utilisateur AS u
+WHERE u.id_groupe = 1 AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name)) AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name));
 
 
 -- Requête export_synthese_initialisation
@@ -163,7 +184,7 @@ COPY (
 			WHEN r.id_org_f = 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'flora_cbna'
 			WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
 			WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-			ELSE NULL
+			ELSE 'INCONNU'
 		END AS code_source,		
 	mj.lib_jdd_court::varchar(255) AS code_dataset,
 		CASE
@@ -282,11 +303,19 @@ COPY (
 	r.date_releve_deb::timestamp AS date_min,
 	r.date_releve_fin::timestamp AS date_max,
 		CASE
-			WHEN o.meta_type_valid::text = 'a_v1'::text THEN NULL
-			ELSE concat(concat_ws(' '::text, val.nom, val.prenom), ' (', COALESCE(ov.abb, ov.nom, 'Inconnu'::character varying), ')')
-		END AS "validator", 
-		NULL
-	AS validation_comment,
+			WHEN o.meta_type_valid::text = 'a_v1'::text 
+				THEN NULL
+			ELSE concat(concat_ws(' '::text, val.nom, val.prenom),
+				' (', COALESCE(ov.abb, 
+				CASE 
+					WHEN ca.last_name IS NOT NULL
+						THEN 'CBNA'
+					ELSE ov.nom
+				END
+				, 'Inconnu'::character varying), ')')
+		END
+	AS "validator", 
+	NULL AS validation_comment,
 		COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
 	flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
 	concat(
@@ -374,6 +403,7 @@ COPY (
 		LEFT JOIN referentiels.nombre_pieds np ON o.id_nombre_pieds = np.id_nombre_pieds
 		LEFT JOIN referentiels.observateur det ON det.id_obs = o.id_det
 		LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid
+		LEFT JOIN flore.cbna_agent ca ON ca.uuid = val.permid
 		LEFT JOIN applications.utilisateur dig ON dig.id_user = r.meta_id_user_saisie
 		LEFT JOIN referentiels.organisme ov ON val.id_org = ov.id_org AND det.meta_id_groupe = ov.meta_id_groupe
 		LEFT JOIN referentiels.organisme ovf ON r.id_org_f = ovf.id_org
@@ -392,7 +422,7 @@ COPY (
 
 ) TO '/tmp/synthese.csv' WITH(format csv, header, delimiter E'\t', null '\N');
 
-
+DROP TABLE IF EXISTS flore.cbna_agent;
 
 
 
