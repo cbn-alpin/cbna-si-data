@@ -49,7 +49,7 @@ psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/g
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v organismsDuplicatesCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/permid_organism_uuid_duplicates.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/dataset.sql"
 sudo chown cbionda /tmp/dataset.csv
 sudo mv /tmp/dataset.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/synthese.sql"
+psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v cbnaAgentCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/cbna_agent.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/synthese.sql"
 sudo chown cbionda /tmp/synthese.csv
 sudo mv /tmp/synthese.csv /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/
 echo 'all CSV files created'
