@@ -206,12 +206,12 @@ COPY (
 		END AS code_nomenclature_naturalness,
 		CASE
 			WHEN o.id_herbier1 > 0 THEN '1'::TEXT -- 1 : Oui
-			ELSE '2'::TEXT -- 1 : Oui
+			ELSE '2'::TEXT -- 2 : Non
 		END AS code_nomenclature_exist_proof,
-	o.valid_reg::varchar(25) AS code_nomenclature_valid_status,
+	o.valid_reg::varchar(25) AS code_nomenclature_valid_status, -- 1: certain, 2: probable, 3: douteux, 4: invalide, 5:non validable, null: dans l'espace de saisie, 0: dans l'espace de validation
 		CASE
-			WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) THEN 5
-			ELSE COALESCE(r.sinp_difnivprec::integer, 0)
+			WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) THEN 5 -- diffusion telle quelle, PU: Publique, Re: Publique Régie, Ac: Publique acquise
+			ELSE COALESCE(r.sinp_difnivprec::integer, 0) -- diffusion standard 
 		END::varchar(25) AS code_nomenclature_diffusion_level,
 	'0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
 		CASE
@@ -223,8 +223,8 @@ COPY (
 	'NSP'::text AS code_nomenclature_obj_count,
 	'NSP'::text AS code_nomenclature_type_count,
 		CASE
-			WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN 1
-			ELSE 0
+			WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN 1 -- Département, maille, espace, commune, ZNIEFF
+			ELSE 0 -- Précision maximale telle que saisie(non sensible)
 		END::varchar(25) AS code_nomenclature_sensitivity,
 	'Pr'::text AS code_nomenclature_observation_status, -- Pr : Présent 
 	NULL AS code_nomenclature_blurring,
@@ -242,12 +242,12 @@ COPY (
 			WHEN r.id_precision = 'C'::bpchar THEN '2'::TEXT -- 2 : Rattachement
 			ELSE NULL
 		END AS code_nomenclature_info_geo_type,
-	'0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu 
+	'0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
 		CASE cd.id_indigenat
-			WHEN 1 THEN '2'::TEXT -- 2 : Présent
-			WHEN 2 THEN '0'::TEXT -- 0 : Inconnu
-			WHEN 3 THEN '2'::TEXT -- 2 : Présent
-			WHEN 4 THEN
+			WHEN 1 THEN '2'::TEXT -- 2 : Présent, 1 : indigène
+			WHEN 2 THEN '0'::TEXT -- 0 : Inconnu, 2 : indigène ?
+			WHEN 3 THEN '2'::TEXT -- 2 : Présent, 3 : archéophyte
+			WHEN 4 THEN -- 4 : exogène
 				CASE
 					WHEN e.cd_ref IS NOT NULL THEN '4'::TEXT -- 4 : Introduit envahissant
 					ELSE '3'::TEXT -- 3 : Introduit
@@ -303,7 +303,7 @@ COPY (
 	r.date_releve_deb::timestamp AS date_min,
 	r.date_releve_fin::timestamp AS date_max,
 		CASE
-			WHEN o.meta_type_valid::text = 'a_v1'::text 
+			WHEN o.meta_type_valid::text = 'a_v1'::text -- a_v1 : automatiquement
 				THEN NULL
 			ELSE concat(concat_ws(' '::text, val.nom, val.prenom),
 				' (', COALESCE(ov.abb, 
@@ -334,7 +334,7 @@ COPY (
 	NULL AS determination_date,
 	dig.permid::varchar(50) AS code_digitiser,
 	1::varchar(25) AS code_nomenclature_determination_method,
-	r.comm_date AS comment_context,
+	public.delete_space(r.comm_date) AS comment_context,
 	NULL AS comment_description,
 	jsonb_strip_nulls(
 			CASE
