@@ -180,13 +180,12 @@ COPY (
 	r.id_releve_sinp AS unique_id_sinp_grp,
 	o.id_observation::varchar(25) AS source_id,
 	r.id_releve::varchar(25) AS source_id_grp,
-		CASE
-			WHEN r.id_org_f = 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'flora_cbna'
-			WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-			WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-			WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe = 1 AND r.id_org_f<>2785 AND r.insee_dept NOT IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-			ELSE NULL
-		END AS code_source,		
+	CASE
+		WHEN r.id_org_f = 2785 THEN 'flora_cbna'
+		WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 THEN ovf.nom
+		WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
+		ELSE NULL
+	END AS code_source,
 	mj.lib_jdd_court::varchar(255) AS code_dataset,
 		CASE
 			WHEN r.id_precision = 'P'::bpchar OR r.id_releve_methode = 10 THEN 'St'::TEXT -- St : Stationnel
