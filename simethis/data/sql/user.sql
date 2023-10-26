@@ -201,11 +201,11 @@ COPY (
 				u.meta_date_maj::timestamp AS meta_update_date,
 				'I'::char(1) AS meta_last_action
 			FROM applications.utilisateur u
-			LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
+				LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
 			WHERE u.id_groupe = 1 
 			)
 	
-		UNION 
+			UNION 
 	
 	-- Users outside CBNA but whose observations are located in the accreditation territory
 			(
@@ -235,10 +235,39 @@ COPY (
 				u.meta_date_maj::timestamp AS meta_update_date,
 				'I'::char(1) AS meta_last_action
 			FROM applications.utilisateur u
-			JOIN flore.releve r ON r.meta_id_user_saisie  = u.id_user
-			LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
+				JOIN flore.releve r ON r.meta_id_user_saisie  = u.id_user
+				LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
 			WHERE
 				r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') 
+			)
+
+			UNION
+		
+	-- Digitisers 
+			( 
+			SELECT DISTINCT ON (u.permid)
+				CASE 
+					WHEN r.meta_id_user_saisie IS NOT NULL 
+						THEN u.permid
+					ELSE NULL	
+				END AS unique_id,
+				NULL AS identifier,
+				public.delete_space(u.prenom) AS firstname,
+				u.nom AS "name",
+				public.delete_space(u.email) AS email,
+				COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
+				public.delete_space(u.comm) AS "comment",
+				NULL AS "enable",
+				NULL AS additional_data,
+				u.meta_date_saisie::timestamp AS meta_create_date,
+				u.meta_date_maj::timestamp AS meta_update_date,
+				'I'::char(1) AS meta_last_action
+			FROM applications.utilisateur u
+				JOIN flore.releve r ON r.meta_id_user_saisie  = u.id_user
+				LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
+			WHERE
+				(r.meta_id_groupe = 1
+					OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 			)
 		)AS users
 	)AS cbna_roles
