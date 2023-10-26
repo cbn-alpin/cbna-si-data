@@ -184,7 +184,8 @@ COPY (
 			WHEN r.id_org_f = 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN 'flora_cbna'
 			WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
 			WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-			ELSE 'INCONNU'
+			WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe = 1 AND r.id_org_f<>2785 AND r.insee_dept NOT IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
+			ELSE NULL
 		END AS code_source,		
 	mj.lib_jdd_court::varchar(255) AS code_dataset,
 		CASE
