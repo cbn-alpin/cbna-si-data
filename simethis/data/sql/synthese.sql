@@ -239,7 +239,7 @@ COPY (
 		END AS code_nomenclature_source_status,
 		CASE
 			WHEN r.id_precision = ANY (ARRAY['P'::bpchar, 'T'::bpchar, 'A'::bpchar]) THEN '1'::TEXT -- 1 : Géoréférencement
-			WHEN r.id_precision = 'C'::bpchar THEN '2'::TEXT -- 2 : Rattachement
+			WHEN r.id_precision = 'C' AND r.insee_comm IS NOT NULL AND r.insee_dept IS NOT NULL THEN '2'::TEXT -- 2 : Rattachement
 			ELSE NULL
 		END AS code_nomenclature_info_geo_type,
 	'0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
@@ -295,11 +295,15 @@ COPY (
 			WHEN 'T'::bpchar THEN 800
 			ELSE NULL
 		END) AS "precision",
-		CASE 
-			WHEN r.id_precision ILIKE 'C'
-				THEN concat('COM.', r.insee_comm) 
-			ELSE NULL
-		END AS code_area_attachment,
+	CASE 
+		WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 5
+		THEN concat('COM.', r.insee_comm)
+		WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 2 AND r.insee_dept IS NOT NULL 
+			THEN concat('DEP.', r.insee_dept)
+		WHEN r.id_precision = 'C' AND r.insee_comm IS NULL AND r.insee_dept IS NOT NULL 
+			THEN concat('DEP.', r.insee_dept)
+		ELSE NULL
+	END AS code_area_attachment,
 	r.date_releve_deb::timestamp AS date_min,
 	r.date_releve_fin::timestamp AS date_max,
 		CASE
