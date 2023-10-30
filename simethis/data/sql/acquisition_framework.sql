@@ -22,9 +22,9 @@ COPY (
 		END AS start_date,
 		CASE 
 			WHEN mc.date_cloture::varchar IS NOT NULL AND mc.date_cloture::varchar !~* '^\s*$'
-		    		THEN mc.date_cloture::date
-		    	ELSE NULL
-		    END AS end_date,
+				THEN mc.date_cloture::date
+			ELSE NULL
+		END AS end_date,
 		CASE 
 			WHEN mrobj.cd_nomenclature IS NOT NULL AND mrobj.cd_nomenclature !~* '^\s*$'
 				THEN ARRAY[mrobj.cd_nomenclature]

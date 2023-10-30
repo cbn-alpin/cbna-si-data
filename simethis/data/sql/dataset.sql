@@ -50,7 +50,7 @@ COPY (
         CASE
             WHEN jd.type_donnees IS NOT NULL
                 THEN td.cd_nomenclature
-                ELSE '1' -- Occurences de taxons
+            ELSE '1' -- Occurences de taxons
         END AS code_nomenclature_data_type,
         NULL::text AS keywords,
         jd.dom_marin AS marine_domain,
@@ -85,7 +85,7 @@ COPY (
                 WHEN ter.cd_nomenclature IS NULL 
                     THEN 'METROP'
                 ELSE ter.cd_nomenclature
-              END, 'Métropole']] 
+            END, 'Métropole']] 
         AS cor_territory,
         ARRAY[
     		CASE 
@@ -96,12 +96,12 @@ COPY (
 								THEN NULL 
 							WHEN lower(pri.uuid_national) IS NOT NULL 
 								AND pri.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
-								THEN lower(pri.uuid_national)
-						ELSE NULL
+                                THEN lower(pri.uuid_national)
+						    ELSE NULL
 						END),
 					pri.permid::varchar
 					), '1'] -- Contact principal
-    		ELSE NULL::varchar[]
+    		    ELSE NULL::varchar[]
     		END] ||
     		CASE 
     			WHEN jd.acteur_financeur IS NOT NULL
@@ -111,12 +111,12 @@ COPY (
 								THEN NULL 
 							WHEN lower(fi.uuid_national) IS NOT NULL 
 								AND fi.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
-								THEN lower(fi.uuid_national)
+                                THEN lower(fi.uuid_national)
 						ELSE NULL
 						END),
 					fi.permid::varchar
 					), '2'] -- Financeur
-    		ELSE NULL::varchar[]
+    		    ELSE NULL::varchar[]
     		END ||
     		CASE 
     			WHEN jd.acteur_metadata IS NOT NULL
@@ -146,7 +146,7 @@ COPY (
 						END),
 					pro.permid::varchar
 					), '6'] -- producteur
-    		ELSE NULL::varchar[]
+    		    ELSE NULL::varchar[]
     		END AS cor_actors_organism,
 		CASE 
 			WHEN jd.acteur_principal = 2785
@@ -175,7 +175,9 @@ COPY (
         LEFT JOIN sinp.metadata_ref sta ON jd.statut_source = sta.id_nomenclature
         LEFT JOIN sinp.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
         LEFT JOIN flore.permid_organism_uuid_duplicates poud on poud.id_org = jd.acteur_principal
-            or poud.id_org = jd.acteur_financeur or poud.id_org = jd.acteur_metadata or poud.id_org = jd.acteur_producteur
+            or poud.id_org = jd.acteur_financeur
+            or poud.id_org = jd.acteur_metadata 
+            or poud.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme pri ON pri.id_org = jd.acteur_principal
         LEFT JOIN referentiels.organisme pro ON pro.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme fi ON fi.id_org = jd.acteur_financeur

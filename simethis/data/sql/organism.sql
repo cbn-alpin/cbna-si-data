@@ -18,7 +18,7 @@ COPY (
 	WITH 
 		all_id_orgs_export AS( 
 			SELECT DISTINCT(id_org)
-			id_org 
+				id_org 
 			FROM referentiels.organisme o
 				JOIN sinp.metadata_jdd mjorg 
 					ON (mjorg.acteur_principal = o.id_org 
@@ -35,7 +35,7 @@ COPY (
 			UNION
 			
 			SELECT DISTINCT(id_org)
-			id_org
+				id_org
 			FROM referentiels.organisme o
 				JOIN flore.releve r 
 					ON (r.id_org_f = o.id_org
@@ -90,15 +90,15 @@ SELECT DISTINCT ON (unique_id)
         	END ||
         CASE
 			WHEN o.uuid_national ~* '^\s*$' OR  o.uuid_national IS NULL 
-			THEN jsonb_build_object('is_uuid_national', false)
+				THEN jsonb_build_object('is_uuid_national', false)
 			ELSE jsonb_build_object('is_uuid_national', TRUE)
         END::jsonb) AS additional_data,	
 	o.meta_date_saisie::timestamp AS meta_create_date,
-		CASE 
-	    	WHEN o.meta_date_maj IS NOT NULL OR o.meta_date_maj::varchar !~* '^\s*$'
-	    		THEN o.meta_date_maj::timestamp
-	    	ELSE NULL
-	    END AS meta_update_date,
+	CASE 
+		WHEN o.meta_date_maj IS NOT NULL OR o.meta_date_maj::varchar !~* '^\s*$'
+			THEN o.meta_date_maj::timestamp
+		ELSE NULL
+	END AS meta_update_date,
 	'I' AS meta_last_action
 FROM referentiels.organisme o
 	JOIN all_id_orgs_export a ON a.id_org = o.id_org
