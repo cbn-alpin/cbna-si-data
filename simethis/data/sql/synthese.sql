@@ -176,27 +176,36 @@ COPY (
 			GROUP BY rt.cd_ref, ("right"(rt.id_reglementation::text, 2))
 			)
 	SELECT DISTINCT ON (unique_id_sinp)
-	o.id_observation_sinp AS unique_id_sinp,
-	r.id_releve_sinp AS unique_id_sinp_grp,
-	o.id_observation::varchar(25) AS source_id,
-	r.id_releve::varchar(25) AS source_id_grp,
-	CASE
-		WHEN r.id_org_f = 2785 THEN 'flora_cbna'
-		WHEN r.meta_id_groupe = 1 AND r.id_org_f <> 2785 THEN ovf.nom
-		WHEN r.id_org_f IS NOT NULL AND r.meta_id_groupe <> 1 AND r.id_org_f <> 2785 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') THEN ovf.nom
-		ELSE NULL
-	END AS code_source,
-	mj.lib_jdd_court::varchar(255) AS code_dataset,
+		o.id_observation_sinp AS unique_id_sinp,
+		r.id_releve_sinp AS unique_id_sinp_grp,
+		o.id_observation::varchar(25) AS source_id,
+		r.id_releve::varchar(25) AS source_id_grp,
 		CASE
-			WHEN r.id_precision = 'P'::bpchar OR r.id_releve_methode = 10 THEN 'St'::TEXT -- St : Stationnel
-			WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'C'::bpchar]) THEN 'In'::TEXT -- In : Inventoriel
+			WHEN r.id_org_f = 2785 THEN 'flora_cbna' -- 2785 : CBNA organisme
+			WHEN r.meta_id_groupe = 1 -- 1 : CBNA groupe
+				AND r.id_org_f <> 2785 
+					THEN ovf.nom
+			WHEN r.id_org_f IS NOT NULL
+				AND r.meta_id_groupe <> 1
+				AND r.id_org_f <> 2785 
+				AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74') 
+					THEN ovf.nom
+			ELSE NULL
+		END AS code_source,
+		mj.lib_jdd_court::varchar(255) AS code_dataset,
+		CASE
+			WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
+				OR r.id_releve_methode = 10 
+					THEN 'St'::TEXT -- St : Stationnel
+			WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'C'::bpchar]) 
+				THEN 'In'::TEXT -- In : Inventoriel
 			ELSE 'NSP'::text
 		END AS code_nomenclature_geo_object_nature,
-	'REL'::text AS code_nomenclature_grp_typ,
-	rm.lib AS grp_method,
-	'0'::text AS code_nomenclature_obs_technique, -- 0 : Vu
-	'1'::text AS code_nomenclature_bio_status, -- 1 : Non renseigné
-	'2'::text AS code_nomenclature_bio_condition, -- 2 : vivant
+		'REL'::text AS code_nomenclature_grp_typ,
+		rm.lib AS grp_method,
+		'0'::text AS code_nomenclature_obs_technique, -- 0 : Vu
+		'1'::text AS code_nomenclature_bio_status, -- 1 : Non renseigné
+		'2'::text AS code_nomenclature_bio_condition, -- 2 : vivant
 		CASE
 			WHEN o.id_deg_nat = ANY (ARRAY[1, 2, 3]) THEN '5'::TEXT -- 5 : Subspontané
 			WHEN o.id_deg_nat = 4 THEN '3'::TEXT  -- 3 : Planté
@@ -208,41 +217,52 @@ COPY (
 			WHEN o.id_herbier1 > 0 THEN '1'::TEXT -- 1 : Oui
 			ELSE '2'::TEXT -- 2 : Non
 		END AS code_nomenclature_exist_proof,
-	o.valid_reg::varchar(25) AS code_nomenclature_valid_status, -- 1: certain, 2: probable, 3: douteux, 4: invalide, 5:non validable, null: dans l'espace de saisie, 0: dans l'espace de validation
+		o.valid_reg::varchar(25) AS code_nomenclature_valid_status, -- 1: certain, 2: probable, 3: douteux, 4: invalide, 5:non validable, null: dans l'espace de saisie, 0: dans l'espace de validation
 		CASE
-			WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) THEN 5 -- diffusion telle quelle, PU: Publique, Re: Publique Régie, Ac: Publique acquise
+			WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) --PU: Publique, Re: Publique Régie, Ac: Publique acquise
+				THEN 5 -- diffusion telle quelle
 			ELSE COALESCE(r.sinp_difnivprec::integer, 0) -- diffusion standard 
 		END::varchar(25) AS code_nomenclature_diffusion_level,
-	'0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
+		'0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
 		CASE
 			WHEN o.sexe = 'M'::bpchar THEN '3'::TEXT -- 3 : Mâle
 			WHEN o.sexe = 'F'::bpchar THEN '2'::TEXT -- 2 : Femelle
 			WHEN o.sexe = 'H'::bpchar THEN '4'::TEXT -- 4 : Hermaphrodite
 			ELSE '6'::TEXT -- 6 : Non renseigné
 		END AS code_nomenclature_sex,
-	'NSP'::text AS code_nomenclature_obj_count,
-	'NSP'::text AS code_nomenclature_type_count,
+		'NSP'::text AS code_nomenclature_obj_count,
+		'NSP'::text AS code_nomenclature_type_count,
 		CASE
 			WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN 1 -- Département, maille, espace, commune, ZNIEFF
 			ELSE 0 -- Précision maximale telle que saisie(non sensible)
 		END::varchar(25) AS code_nomenclature_sensitivity,
-	'Pr'::text AS code_nomenclature_observation_status, -- Pr : Présent 
-	NULL AS code_nomenclature_blurring,
+		'Pr'::text AS code_nomenclature_observation_status, -- Pr : Présent 
+		NULL AS code_nomenclature_blurring,
 		CASE
 			WHEN r.id_releve_type::text = 'BIB'::text 
-				OR r.id_releve_type::text = 'NM'::text AND r.id_biblio IS NOT NULL THEN 'Li'::TEXT -- Li : Littérature
+				OR r.id_releve_type::text = 'NM'::text 
+					AND r.id_biblio IS NOT NULL 
+						THEN 'Li'::TEXT -- Li : Littérature
 			WHEN (r.id_releve_type::text = ANY (ARRAY['RT'::character varying, 'COM'::character varying]::text[]))
-				OR r.id_releve_type::text = 'NM'::text AND r.id_biblio IS NULL THEN 'Te'::TEXT -- Te : Terrain
-			WHEN r.id_releve_type::text = 'HB'::text THEN 'Co'::TEXT -- Co : Collection
-			WHEN r.id_releve_type::text = 'I'::text THEN 'NSP'::text
+				OR r.id_releve_type::text = 'NM'::text 
+					AND r.id_biblio IS NULL 
+						THEN 'Te'::TEXT -- Te : Terrain
+			WHEN r.id_releve_type::text = 'HB'::text 
+				THEN 'Co'::TEXT -- Co : Collection
+			WHEN r.id_releve_type::text = 'I'::text 
+				THEN 'NSP'::text
 			ELSE NULL
 		END AS code_nomenclature_source_status,
 		CASE
-			WHEN r.id_precision = ANY (ARRAY['P'::bpchar, 'T'::bpchar, 'A'::bpchar]) THEN '1'::TEXT -- 1 : Géoréférencement
-			WHEN r.id_precision = 'C' AND r.insee_comm IS NOT NULL AND r.insee_dept IS NOT NULL THEN '2'::TEXT -- 2 : Rattachement
+			WHEN r.id_precision = ANY (ARRAY['P'::bpchar, 'T'::bpchar, 'A'::bpchar]) 
+				THEN '1'::TEXT -- 1 : Géoréférencement
+			WHEN r.id_precision = 'C' 
+				AND r.insee_comm IS NOT NULL 
+				AND r.insee_dept IS NOT NULL 
+					THEN '2'::TEXT -- 2 : Rattachement
 			ELSE NULL
 		END AS code_nomenclature_info_geo_type,
-	'0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
+		'0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
 		CASE cd.id_indigenat
 			WHEN 1 THEN '2'::TEXT -- 2 : Présent, 1 : indigène
 			WHEN 2 THEN '0'::TEXT -- 0 : Inconnu, 2 : indigène ?
@@ -255,57 +275,63 @@ COPY (
 			ELSE '1'::TEXT -- 1 : Non renseigné
 		END AS code_nomenclature_biogeo_status,
 		CASE
-			WHEN r.id_biblio IS NOT NULL THEN concat(b.auteurs, ', ', b.annee, '. ', b.titre)
+			WHEN r.id_biblio IS NOT NULL 
+				THEN concat(b.auteurs, ', ', b.annee, '. ', b.titre)
 			ELSE NULL
 		END AS reference_biblio,
-	COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
-	COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
+		COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
+		COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
 		CASE
 			WHEN o.cd_ref < 15
 				THEN o.cd_ref + 30000000
 			ELSE o.cd_ref
 		END AS cd_nom,
-	NULL AS cd_hab,
+		NULL AS cd_hab,
 		CASE
 			WHEN o.nom_taxon IS NOT NULL
 				THEN o.nom_taxon::varchar(1000)
 			ELSE ''
 		END AS nom_cite,
-	NULL AS digital_proof,
-	NULL AS non_digital_proof,
-	LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
-	GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
-	NULL AS depth_min,
-	NULL AS depth_max,
+		NULL AS digital_proof,
+		NULL AS non_digital_proof,
+		LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
+		GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
+		NULL AS depth_min,
+		NULL AS depth_max,
 		CASE
 			WHEN r.lieudit  != '' 
 				THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
 			ELSE '{"lieudit": null}'
 		END::varchar(500) AS place_name,
-	  st_geomfromewkt(  
-		CASE
-			WHEN r.id_precision = 'P'::bpchar THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) -- P : Pointage précis
-			WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
-				THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
-			ELSE NULL
-		END) AS geom,
+		st_geomfromewkt(  
+			CASE
+				WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
+					THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154)) 
+				WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
+					THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
+				ELSE NULL
+			END
+		)
+		AS geom,
 		COALESCE(r.resolution,
-		CASE r.id_precision
-			WHEN 'P'::bpchar THEN 10
-			WHEN 'T'::bpchar THEN 800
+			CASE r.id_precision
+				WHEN 'P'::bpchar THEN 10
+				WHEN 'T'::bpchar THEN 800
+				ELSE NULL
+			END
+		)
+		AS "precision",
+		CASE 
+			WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 5
+				THEN concat('COM.', r.insee_comm)
+			WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 2 AND r.insee_dept IS NOT NULL 
+				THEN concat('DEP.', r.insee_dept)
+			WHEN r.id_precision = 'C' AND r.insee_comm IS NULL AND r.insee_dept IS NOT NULL 
+				THEN concat('DEP.', r.insee_dept)
 			ELSE NULL
-		END) AS "precision",
-	CASE 
-		WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 5
-		THEN concat('COM.', r.insee_comm)
-		WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 2 AND r.insee_dept IS NOT NULL 
-			THEN concat('DEP.', r.insee_dept)
-		WHEN r.id_precision = 'C' AND r.insee_comm IS NULL AND r.insee_dept IS NOT NULL 
-			THEN concat('DEP.', r.insee_dept)
-		ELSE NULL
-	END AS code_area_attachment,
-	r.date_releve_deb::timestamp AS date_min,
-	r.date_releve_fin::timestamp AS date_max,
+		END AS code_area_attachment,
+		r.date_releve_deb::timestamp AS date_min,
+		r.date_releve_fin::timestamp AS date_max,
 		CASE
 			WHEN o.meta_type_valid::text = 'a_v1'::text -- a_v1 : automatiquement
 				THEN NULL
@@ -316,34 +342,35 @@ COPY (
 						THEN 'CBNA'
 					ELSE ov.nom
 				END
-				, 'Inconnu'::character varying), ')')
-		END
-	AS "validator", 
-	NULL AS validation_comment,
-		COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
-	flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
-	concat(
-		CASE 
-			WHEN o.id_det IS NOT NULL 
-				THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
-			ELSE 'INCONNU'
-		END,
-		CASE 
-			WHEN det.email IS NOT NULL AND det.email != '' 
-				THEN concat(' ','<', det.email,'>')
-			ELSE ''
-		END
+				, 'Inconnu'::character varying), ')'
+				)
+		END AS "validator", 
+		NULL AS validation_comment,
+			COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
+		flore.generate_observers(r.id_releve, ', '::character varying) AS observers,  
+		concat(
+			CASE 
+				WHEN o.id_det IS NOT NULL 
+					THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
+				ELSE 'INCONNU'
+			END,
+			CASE 
+				WHEN det.email IS NOT NULL AND det.email != '' 
+					THEN concat(' ','<', det.email,'>')
+				ELSE ''
+			END
 		)
-	AS determiner,
-	NULL AS determination_date,
-	dig.permid::varchar(50) AS code_digitiser,
-	1::varchar(25) AS code_nomenclature_determination_method,
-	public.delete_space(r.comm_date) AS comment_context,
-	NULL AS comment_description,
-	jsonb_strip_nulls(
+		AS determiner,
+		NULL AS determination_date,
+		dig.permid::varchar(50) AS code_digitiser,
+		1::varchar(25) AS code_nomenclature_determination_method,
+		public.delete_space(r.comm_date) AS comment_context,
+		NULL AS comment_description,
+		jsonb_strip_nulls(
 			CASE
 				WHEN r.id_org_f IS NOT NULL
-					THEN jsonb_build_object('fournisseur', jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
+					THEN jsonb_build_object('fournisseur',
+							jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
 				ELSE jsonb_build_object('fournisseur', null)
 			END ||     
 			public.build_simple_json_object('idObs1', r.id_obs1) ||
@@ -357,7 +384,8 @@ COPY (
 			public.build_simple_json_object('inseeReg', r.insee_reg) ||
 			CASE
 				WHEN h.nom != ''
-					THEN jsonb_build_object('herbier', jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
+					THEN jsonb_build_object('herbier',
+							jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
 				ELSE jsonb_build_object('herbier', null)    			
 			END ||
 			public.build_simple_json_object('codePerso', r.code_perso) ||
@@ -394,11 +422,11 @@ COPY (
 							))
 				ELSE jsonb_build_object ('digitisers', null)
 			END
-			)
-	AS additional_data,
-	r.meta_date_saisie::timestamp AS meta_create_date,
-	GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
-	'I' AS meta_last_action 
+		)
+		AS additional_data,
+		r.meta_date_saisie::timestamp AS meta_create_date,
+		GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
+		'I' AS meta_last_action 
 	FROM flore.releve r
 		JOIN flore.observation o ON r.id_releve = o.id_releve
 		JOIN sinp.metadata_jdd mj ON r.id_jdd = mj.id_jdd
