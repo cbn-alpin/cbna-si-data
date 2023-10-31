@@ -298,11 +298,34 @@ COPY (
 		GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
 		NULL AS depth_min,
 		NULL AS depth_max,
-		CASE
-			WHEN r.lieudit  != '' 
-				THEN jsonb_build_object('lieudit', jsonb_build_object('lieuditName', r.lieudit, 'locationComment', r.comm_loc))
-			ELSE '{"lieudit": null}'
-		END::varchar(500) AS place_name,
+		CASE 
+			WHEN 
+				jsonb_strip_nulls(
+					CASE
+						WHEN lieudit IS NOT NULL AND lieudit !~* '^\s*$'
+							THEN jsonb_build_object('lieuditName', lieudit) 
+						ELSE jsonb_build_object('lieuditName', null)
+					END ||
+					CASE
+						WHEN comm_loc IS NOT NULL AND comm_loc !~* '^\s*$'
+							THEN jsonb_build_object('locationComment', comm_loc)
+						ELSE jsonb_build_object('locationComment', null)
+					END
+				)= '{}' 
+				THEN NULL
+			ELSE jsonb_strip_nulls(
+					CASE
+						WHEN lieudit IS NOT NULL AND lieudit !~* '^\s*$'
+							THEN jsonb_build_object('lieuditName', lieudit) 
+						ELSE jsonb_build_object('lieuditName', null)
+					END ||
+					CASE
+						WHEN comm_loc IS NOT NULL AND comm_loc !~* '^\s*$'
+							THEN jsonb_build_object('locationComment', comm_loc)
+						ELSE jsonb_build_object('locationComment', null)
+					END
+				)
+		END AS place_name,
 		st_geomfromewkt(  
 			CASE
 				WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
