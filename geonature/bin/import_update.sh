@@ -74,12 +74,12 @@ function main() {
 
     buildTablePrefix
 
-    parseCsv "taxref rangs" "tr"
+    parseTaxhubCsv "taxref rangs" "tr"
     executeCopy "taxref rangs"
     displayStats "taxref rangs"
     executeUpgradeScript "taxref rangs" "insert"
 
-    parseCsv "taxref" "t"
+    parseTaxhubCsv "taxref" "t"
     executeCopy "taxref"
     displayStats "taxref"
     executeUpgradeScript "taxref" "insert"
@@ -212,6 +212,40 @@ function parseCsv() {
         printVerbose "${type^^} CSV file already parsed." ${Gra}
     fi
 }
+
+function parseTaxhubCsv() {
+    if [[ $# -lt 2 ]]; then
+        exitScript "Missing required argument to ${FUNCNAME[0]}()!" 2
+    fi
+
+    local type="${1,,}"
+    local type_abbr="${2,,}"
+
+    local data_type="${type// /_}"
+    local data_type_abbr=$(echo "${type}" | sed 's/\(.\)[^ ]* */\1/g')
+    if [[ "${#data_type_abbr}" = "1" ]]; then
+        data_type_abbr="${data_type}"
+    fi
+    declare -n csv_file="sialp_filename_${data_type_abbr}"
+    local csv_to_import="${csv_file%.csv}_rti.csv"
+
+    # Exit if CSV file not found
+    if ! [[ -f "${raw_dir}/${csv_file}" ]]; then
+        return 0
+    fi
+
+    printMsg "Parse ${type^^} CSV file..."
+    if [[ ! -f "${raw_dir}/${csv_to_import}" ]]; then
+        cd "${root_dir}/import-parser/"
+        pipenv run python ./bin/th_import_parser.py \
+            --type "${type_abbr}" \
+            --config "${conf_dir}/parser_actions_update.ini" \
+            "${raw_dir}/${csv_file}"
+    else
+        printVerbose "${type^^} CSV file already parsed." ${Gra}
+    fi
+}
+
 
 function executeCopy() {
     if [[ $# -lt 1 ]]; then
