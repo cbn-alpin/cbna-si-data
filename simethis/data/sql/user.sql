@@ -223,13 +223,7 @@ COPY (
 					'idGroupe', u.id_groupe, 
 					'password', u.pass, 
 					'lastLogin', u.last_login, 
-					'key', u."key",
-					'users', jsonb_build_object('VANDERPERT Héloïse', 'u.id_user = 21',
-						'SAUTREAU Catherine', 'u.id_user = 47',
-						'BARCELLI Martine', 'u.id_user = 394',
-						'CASIEZ Christine', 'u.id_user = 75',
-						'NOBLE Virgile', 'u.id_user = 4'
-					)
+					'key', u."key"
 				)::jsonb AS additional_data,
 				u.meta_date_saisie::timestamp AS meta_create_date,
 				u.meta_date_maj::timestamp AS meta_update_date,
