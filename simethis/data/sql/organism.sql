@@ -48,6 +48,20 @@ COPY (
 			WHERE
 				r.meta_id_groupe = 1
 					OR (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74'))
+
+			UNION 
+			
+			SELECT DISTINCT ON (o.id_org)
+				CASE 
+					WHEN r.meta_id_user_saisie IS NOT NULL 
+						THEN o.id_org
+				END AS id_org	
+			FROM applications.utilisateur u
+					JOIN flore.releve r ON r.meta_id_user_saisie  = u.id_user
+					LEFT JOIN referentiels.organisme o ON o.id_org = u.id_org 
+			WHERE
+				(r.meta_id_groupe = 1 
+					OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
 	)
 
 SELECT DISTINCT ON (unique_id)
