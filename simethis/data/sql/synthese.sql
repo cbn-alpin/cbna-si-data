@@ -330,7 +330,7 @@ COPY (
 						ELSE jsonb_build_object('locationComment', null)
 					END
 				)
-		END AS place_name,
+		END::varchar(500) AS place_name,
 		st_geomfromewkt(  
 			CASE
 				WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
@@ -478,7 +478,7 @@ COPY (
 	WHERE
 		(r.meta_id_groupe = 1
 			OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))	
-	LIMIT 100000
+	LIMIT 500000
 
 ) TO '/tmp/synthese.csv' WITH(format csv, header, delimiter E'\t', null '\N');
 
