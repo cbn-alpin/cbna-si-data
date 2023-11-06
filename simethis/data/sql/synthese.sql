@@ -295,12 +295,7 @@ COPY (
 		NULL AS digital_proof,
 		NULL AS non_digital_proof,
 		LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
-		GREATEST(NULLIF(
-			CASE 
-				WHEN r.alti_sup > 4696
-					THEN 4695
-				ELSE r.alti_sup
-			END, 0), r.alti_calc) AS altitude_max,
+		GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
 		NULL AS depth_min,
 		NULL AS depth_max,
 		CASE 
