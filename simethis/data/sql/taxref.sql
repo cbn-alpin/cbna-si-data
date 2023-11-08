@@ -42,7 +42,9 @@ COPY (
 	FROM referentiels.taxref t 
 	LEFT JOIN applications.utilisateur u 
 		ON u.id_user = t.meta_id_user_maj 
-	WHERE cd_ref < 15 OR (cd_ref > 20000000 AND cd_nom > 20000000)
+	WHERE cd_ref < 15
+		OR (cd_ref > 20000000 AND cd_nom > 20000000)
+		OR cd_ref = 787051 -- nouveau taxon dans Taxref v17 (Brachythecium tauriscorum)
 
 	UNION
 
