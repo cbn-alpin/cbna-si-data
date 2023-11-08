@@ -376,11 +376,6 @@ COPY (
 				WHEN o.id_det IS NOT NULL 
 					THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
 				ELSE 'INCONNU'
-			END,
-			CASE 
-				WHEN det.email IS NOT NULL AND det.email != '' 
-					THEN concat(' ','<', det.email,'>')
-				ELSE ''
 			END
 		)
 		AS determiner,
