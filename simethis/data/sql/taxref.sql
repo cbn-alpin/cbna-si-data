@@ -44,7 +44,7 @@ COPY (
 		ON u.id_user = t.meta_id_user_maj 
 	WHERE cd_ref < 15
 		OR (cd_ref > 20000000 AND cd_nom > 20000000)
-		OR cd_ref = 787051 -- nouveau taxon dans Taxref v17 (Brachythecium tauriscorum)
+		OR cd_ref IN (787051, 721916, 101626) -- nouveaux taxons dans Taxref v17
 
 	UNION
 
@@ -86,5 +86,5 @@ COPY (
 	WHERE cd_ref_origine != cd_ref
 )
 TO stdout
-WITH (format csv, header, delimiter E'\t')
+WITH (format csv, header, delimiter E'\t') 
 ;
