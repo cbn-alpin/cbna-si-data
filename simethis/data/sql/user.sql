@@ -187,7 +187,7 @@ COPY (
 				public.delete_space(u.prenom) AS firstname,
 				u.nom AS "name",
 				public.delete_space(u.email) AS email,
-				COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
+				lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism, 
 				public.delete_space(u.comm) AS "comment",
 				NULL AS "enable",
 				jsonb_build_object(
@@ -215,7 +215,7 @@ COPY (
 				public.delete_space(u.prenom) AS firstname,
 				u.nom AS "name",
 				public.delete_space(u.email) AS email,
-				COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
+				lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism, 
 				public.delete_space(u.comm) AS "comment",
 				NULL AS "enable",
 				jsonb_build_object(
@@ -249,7 +249,7 @@ COPY (
 				public.delete_space(u.prenom) AS firstname,
 				u.nom AS "name",
 				public.delete_space(u.email) AS email,
-				COALESCE(o.uuid_national, o.permid::varchar) AS code_organism, 
+				lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism, 
 				public.delete_space(u.comm) AS "comment",
 				NULL AS "enable",
 				NULL AS additional_data,
