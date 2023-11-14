@@ -33,7 +33,7 @@ COPY (
 		ARRAY[1]::TEXT AS cor_voletsinp, --1 Terre
 		CASE
 			WHEN mc.acteur_principal IS NOT NULL 
-				THEN ARRAY[ARRAY[o.nom, '1'::character varying]] -- '1' contact principal
+				THEN ARRAY[ARRAY[lower(COALESCE(o.uuid_national, o.permid::varchar)) , '1'::character varying]] -- '1' contact principal
 			ELSE NULL::character varying[]
 		END AS cor_actors_organism,
 		ARRAY[ARRAY[u.permid::character varying, '1'::TEXT]] AS cor_actors_user,
