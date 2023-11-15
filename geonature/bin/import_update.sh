@@ -68,10 +68,10 @@ function main() {
     # Start script
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
+    precheck
     downloadDataArchive
     extractArchive
     prepareDb
-
     buildTablePrefix
 
     parseCsv "taxref rangs" "tr"
