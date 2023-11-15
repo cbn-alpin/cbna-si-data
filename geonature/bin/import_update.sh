@@ -158,7 +158,7 @@ function downloadDataArchive() {
     if [[ ! -f "${raw_dir}/${cbna_filename_archive}" ]]; then
         downloadSftp "${sftp_user}" "${sftp_pwd}" \
             "${sftp_host}" "${sftp_port}" \
-            "/${app_code}/${cbna_filename_archive}" "${raw_dir}/${cbna_filename_archive}"
+            "/${cbna_archive_path}/${cbna_filename_archive}" "${raw_dir}/${cbna_filename_archive}"
      else
         printVerbose "Archive file \"${cbna_filename_archive}\" already downloaded." ${Gra}
     fi
@@ -221,7 +221,6 @@ function parseCsv() {
         printVerbose "${type^^} CSV file already parsed." ${Gra}
     fi
 }
-
 
 function executeCopy() {
     if [[ $# -lt 1 ]]; then
