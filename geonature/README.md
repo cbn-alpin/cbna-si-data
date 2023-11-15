@@ -1,12 +1,16 @@
-# Import geonature
+# Import GeoNature
+
 Contient les scripts d'import des données flore et végétation du CBNA issues de la base Simethis.
-Contient l'arborescence suivante :
-  - bin : contient le script bash **import_update.sh** permettant de parcourir et extraire les données des fichiers "acquisition_framework.csv", "dataset.csv", "organism.csv", "source.csv", "synthese.csv" se trouvant dans le dossier data/raw. 
-  - config : contient les paramètres de configuration
-  - data : contient
-    - un dossier raw  : des fichiers sous format CSV des données à importer dans GeoNature 
-    - un dossier sql : qui contiendra les fichiers avec les requêtes SQL
-  - var : 
-    - un dossier log : contient le rapport des erreurs 
- 
- 
+
+## Arborescence des dossiers
+
+  - `bin/` : contient les scripts Bash utilisés pour l'import des données CBNA dans GeoNature.
+    - `import_update.sh` : script permettant de parcourir et extraire les données des fichiers "acquisition_framework.csv", "dataset.csv", "organism.csv", "source.csv", "synthese.csv" se trouvant dans le dossier `data/raw`.
+  - `config/` : contient les paramètres de configuration.
+  - `data/` :
+    - `raw/`  : contient les fichiers principalement au format CSV des données à importer dans GeoNature.
+    - `sql/` : contient les fichiers SQL utilisés par les scripts présents dans `bin/`.
+  - `var/` :
+    - `log/` : contient les logs d'execution des scripts présents dans `bin/`.
+
+
