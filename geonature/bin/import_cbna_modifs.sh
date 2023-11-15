@@ -1,6 +1,7 @@
 #!/bin/bash
 # Encoding : UTF-8
-# Import some updated, deleted or new data in GeoNature Database the CBNA Flora Data.
+# Keep a history of custom TaxRef  changes made by CBNA .
+# These modifications are stored in the 'cbna' schema of the GeoNature database..
 
 #+----------------------------------------------------------------------------------------------------------+
 # Configure script execute options
@@ -80,7 +81,7 @@ function main() {
 }
 
 function buildTablePrefix() {
-    table_prefix="${app_code}_${sialp_import_date//-/}"
+    table_prefix="${app_code}_${cbna_import_date//-/}"
 }
 
 function executeCopy() {
@@ -97,7 +98,7 @@ function executeCopy() {
     fi
 
     # Exit if CSV file not found
-    if ! [[ -f "${raw_dir}/${sialp_import_date}_${data_type}.csv" ]]; then
+    if ! [[ -f "${raw_dir}/${cbna_import_date}_${data_type}.csv" ]]; then
         return 0
     fi
 
@@ -110,7 +111,7 @@ function executeCopy() {
         psql -d "${db_name}" \
             -v "${psql_var}=${table}" \
             -v gnDbOwner="${db_user}" \
-            -v csvFilePath="${raw_dir}/${sialp_import_date}_${data_type}.csv" \
+            -v csvFilePath="${raw_dir}/${cbna_import_date}_${data_type}.csv" \
             -f "${sql_file}"
 }
 

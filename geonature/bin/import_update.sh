@@ -131,38 +131,46 @@ function main() {
 
     reloadCorAreaSynthese
 
-    printPretty "Are you sure to run maintain DB SQL script wich lock database (y/n). Default: n ?" ${Red}
-    read -r -n 1 key
-    echo # Move to a new line
-    if [[ "${key}" =~ ^[Yy]$ ]]; then
-        maintainDb
-    fi
-
     #+----------------------------------------------------------------------------------------------------------+
     # Display script execution infos
     displayTimeElapsed
 }
 
-function downloadDataArchive() {
-    printMsg "Download CBNA data archive..."
+function precheck() {
+    printMsg "Check binaries and directories"
 
-    if [[ ! -f "${raw_dir}/${sialp_filename_archive}" ]]; then
-        curl -X POST https://content.dropboxapi.com/2/files/download \
-            --header "Authorization: Bearer ${cbna_dropbox_token}" \
-            --header "Dropbox-API-Arg: {\"path\": \"${cbna_dropbox_dir}/${sialp_filename_archive}\"}" \
-            > "${raw_dir}/${sialp_filename_archive}"
+    printVerbose "Check all necessary binaries" ${Gra-}
+    local readonly commands=("tar" "psql" "pipenv" "sed")
+    checkBinary "${commands[@]}"
+
+    printVerbose "Check if the raw data directory exists" ${Gra-}
+    if [[ ! -d "${raw_dir}" ]]; then
+        exitScript "Directory '${raw_dir}' does not exist."
+    else
+        printVerbose "Found directory '${raw_dir}': ${Gre-}OK" ${Gra-}
+    fi
+
+}
+
+function downloadDataArchive() {
+    printMsg "Downloading ${app_code^^} data archive..."
+
+    if [[ ! -f "${raw_dir}/${cbna_filename_archive}" ]]; then
+        downloadSftp "${sftp_user}" "${sftp_pwd}" \
+            "${sftp_host}" "${sftp_port}" \
+            "/${app_code}/${cbna_filename_archive}" "${raw_dir}/${cbna_filename_archive}"
      else
-        printVerbose "Archive file \"${sialp_filename_archive}\" already downloaded." ${Gra}
+        printVerbose "Archive file \"${cbna_filename_archive}\" already downloaded." ${Gra}
     fi
 }
 
 function extractArchive() {
     printMsg "Extract import data CSV files..."
 
-    if [[ -f "${raw_dir}/${sialp_filename_archive}" ]]; then
+    if [[ -f "${raw_dir}/${cbna_filename_archive}" ]]; then
         if [[ ! -f "${raw_dir}/${cbna_filename_synthese}" ]]; then
             cd "${raw_dir}/"
-            tar jxvf "${raw_dir}/${sialp_filename_archive}"
+            tar jxvf "${raw_dir}/${cbna_filename_archive}"
         else
             printVerbose "CSV files already extracted." ${Gra}
         fi
@@ -171,13 +179,14 @@ function extractArchive() {
 
 function prepareDb() {
     printMsg "Insert utils functions into GeoNature database..."
+
     export PGPASSWORD="${db_pass}"; \
         psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
             -f "${sql_shared_dir}/utils_functions.sql"
 }
 
 function buildTablePrefix() {
-    table_prefix="${app_code}_${sialp_import_date//-/}"
+    table_prefix="${app_code}_${cbna_import_date//-/}"
 }
 
 function parseCsv() {
@@ -193,7 +202,7 @@ function parseCsv() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="sialp_filename_${data_type_abbr}"
+    declare -n csv_file="cbna_filename_${data_type_abbr}"
     local csv_to_import="${csv_file%.csv}_rti.csv"
 
     # Exit if CSV file not found
@@ -226,7 +235,7 @@ function executeCopy() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="sialp_filename_${data_type_abbr}"
+    declare -n csv_file="cbna_filename_${data_type_abbr}"
     local csv_to_import="${csv_file%.csv}_rti.csv"
 
     # Exit if CSV file not found
@@ -262,7 +271,7 @@ function displayStats() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="sialp_filename_${data_type_abbr}"
+    declare -n csv_file="cbna_filename_${data_type_abbr}"
 
     # Exit if CSV file not found
     if ! [[ -f "${raw_dir}/${csv_file}" ]]; then
@@ -290,7 +299,7 @@ function executeUpgradeScript() {
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-    declare -n csv_file="sialp_filename_${data_type_abbr}"
+    declare -n csv_file="cbna_filename_${data_type_abbr}"
 
     # Exit if CSV file not found
     if ! [[ -f "${raw_dir}/${csv_file}" ]]; then
