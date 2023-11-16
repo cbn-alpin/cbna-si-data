@@ -25,7 +25,7 @@ psql si_cbn -c "create extension fuzzystrmatch;"
 psql si_cbn -c "create extension postgres_fdw;"
 psql si_cbn -c "create extension intarray;"
 psql si_cbn -c "create extension ogr_fdw;"
-echo 'all extensions created' 
+echo 'all extensions created'
 pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/referentiels_20230828.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/referentiels_20230828_pgrestore.log"
 pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si_cbn" --jobs "3" "/home/cbionda/data/dump_simethis/applications_20230828.dump" 2>&1 | tee "/home/cbionda/data/dump_simethis/applications_20230828_pgrestore.log"
 psql si_cbn -c "create schema sinp"
@@ -35,7 +35,7 @@ pg_restore --host "localhost" --port "5432" -U "cbionda"  --verbose --dbname "si
 echo 'database flore simethis restored'
 psql -h "localhost" -U "cbionda" -d "si_cbn" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/utils.sql"
 echo 'create utils functions'
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_rangs.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_rangs.csv
+psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_rank.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_rank.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_modifs.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_modifs.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/source.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/source.csv

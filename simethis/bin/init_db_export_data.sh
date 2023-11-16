@@ -77,7 +77,7 @@ function main() {
     # restoreSchemas
     # addUtilsfunctions
 
-    extractCSV "taxref_rangs"
+    extractCSV "taxref_rank"
     extractCSV "taxref"
     extractCSV "taxref_modifs"
     extractCSV "source"
@@ -165,7 +165,7 @@ function restoreSchema() {
         --jobs ${pg_restore_jobs} --verbose \
         "${dump_folder}/${schemaName}_${si_cbn_import_date//-/}"
         set -e
-    else 
+    else
         set +e
         PGPASSWORD=${db_pass} pg_restore --host ${db_host} --port ${db_port} --username ${db_user} \
         --dbname ${db_name} \
