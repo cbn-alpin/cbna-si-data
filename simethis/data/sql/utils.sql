@@ -5,31 +5,31 @@ CREATE OR REPLACE FUNCTION flore.check_cbna_agent(observer_id integer, date_rele
  LANGUAGE plpgsql
  SECURITY DEFINER
 AS $function$
-	DECLARE
-		cbna_agent_unique_id uuid;
-	
-	BEGIN 
-		cbna_agent_unique_id := NULL;
-	
-		SELECT INTO cbna_agent_unique_id
-			CASE 
-		    	WHEN ca.gid IS NOT NULL 
-		    			THEN ca.uuid 
-		    			ELSE concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', observer_id)))::uuid
-		    END AS unique_id
-		FROM referentiels.observateur o 
-			LEFT JOIN flore.cbna_agent ca 
-				ON (
-					lower(unaccent(o.nom)) = lower(unaccent(ca.last_name))
-					AND lower(unaccent(o.prenom)) = lower(unaccent(ca.first_name))
-					AND (date_releve > ca.entry_date OR date_releve < coalesce(ca.release_date, now()))	
-				)
-		WHERE o.id_obs = observer_id;
-	
-		RETURN cbna_agent_unique_id;
-	END;
+    DECLARE
+        cbna_agent_unique_id uuid;
+
+    BEGIN
+        cbna_agent_unique_id := NULL;
+
+        SELECT INTO cbna_agent_unique_id
+            CASE
+                WHEN ca.gid IS NOT NULL
+                        THEN ca.uuid
+                        ELSE concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', observer_id)))::uuid
+            END AS unique_id
+        FROM referentiels.observateur o
+            LEFT JOIN flore.cbna_agent ca
+                ON (
+                    lower(unaccent(o.nom)) = lower(unaccent(ca.last_name))
+                    AND lower(unaccent(o.prenom)) = lower(unaccent(ca.first_name))
+                    AND (date_releve > ca.entry_date OR date_releve < coalesce(ca.release_date, now()))
+                )
+        WHERE o.id_obs = observer_id;
+
+        RETURN cbna_agent_unique_id;
+    END;
 $function$
-; 
+;
 
 -- function build a simple json object with a CASE WHEN. Return a json object
 
@@ -38,19 +38,19 @@ CREATE OR REPLACE FUNCTION public.build_simple_json_object(fieldkey character va
  LANGUAGE plpgsql
  SECURITY DEFINER
 AS $function$
-	DECLARE
-		jsonObject jsonb;
-	
-	BEGIN 
-   		SELECT 
-			CASE 
-		    	WHEN (pg_typeof(fieldValue) = 'integer'::regtype AND fieldValue IS NOT NULL) OR (pg_typeof(fieldValue) = 'character varying'::regtype AND fieldValue::varchar != '')
-		    		THEN jsonb_build_object(fieldKey, fieldValue)
-		    	ELSE jsonb_build_object(fieldKey, NULL)
-		    END::jsonb INTO jsonObject;
-		
-		RETURN jsonObject;
-	END;
+    DECLARE
+        jsonObject jsonb;
+
+    BEGIN
+           SELECT
+            CASE
+                WHEN (pg_typeof(fieldValue) = 'integer'::regtype AND fieldValue IS NOT NULL) OR (pg_typeof(fieldValue) = 'character varying'::regtype AND fieldValue::varchar != '')
+                    THEN jsonb_build_object(fieldKey, fieldValue)
+                ELSE jsonb_build_object(fieldKey, NULL)
+            END::jsonb INTO jsonObject;
+
+        RETURN jsonObject;
+    END;
 $function$
 ;
 
@@ -60,20 +60,20 @@ CREATE OR REPLACE FUNCTION public.delete_space(txtWithSpace varchar)
  LANGUAGE plpgsql
  SECURITY DEFINER
 AS $function$
-	DECLARE
-		txtWithoutSpace text;
-	
-	BEGIN 
-		txtWithoutSpace := '';
-	
-		SELECT INTO txtWithoutSpace
-			CASE 
-		    	WHEN txtWithSpace IS NOT NULL AND txtWithSpace !~* '^\s*$'
-		    		THEN txtWithSpace
-		    	ELSE NULL
-		    END;
-		
-		RETURN txtWithoutSpace;
-	END;
+    DECLARE
+        txtWithoutSpace text;
+
+    BEGIN
+        txtWithoutSpace := '';
+
+        SELECT INTO txtWithoutSpace
+            CASE
+                WHEN txtWithSpace IS NOT NULL AND txtWithSpace !~* '^\s*$'
+                    THEN txtWithSpace
+                ELSE NULL
+            END;
+
+        RETURN txtWithoutSpace;
+    END;
 $function$
 ;

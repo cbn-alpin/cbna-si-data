@@ -1,21 +1,23 @@
 -- In order to list the duplicates of the uuid_national of the organism table, we created a query linked below
 -- https://wiki-intranet.cbn-alpin.fr/projets/feder-si/migration-simethis-geonature#requete_permettant_de_lister_les_doublons_des_uuid_national_des_organismes
 
+DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
+
 CREATE TABLE flore.permid_organism_uuid_duplicates(
-	gid serial PRIMARY KEY,
-	permid uuid,
-	id_org smallserial,
-	"name" varchar
+    gid SERIAL PRIMARY KEY,
+    permid UUID,
+    id_org SMALLSERIAL,
+    "name" VARCHAR
 );
 
 -- Insert datas from CSV file to table
 COPY flore.permid_organism_uuid_duplicates(permid, id_org, "name")
-	FROM :organismsDuplicatesCsvFilePath
+FROM :'organismsDuplicatesCsvFilePath'
 DELIMITER ','
 CSV HEADER;
 
 COPY (
-    WITH 
+    WITH
         list_jdd AS (
             SELECT r.id_jdd
             FROM flore.releve r
@@ -45,7 +47,7 @@ COPY (
         CASE
             WHEN jd.desc_jdd IS NULL
                 THEN ''
-            ELSE jd.desc_jdd::text 
+            ELSE jd.desc_jdd::text
         END AS "desc",
         CASE
             WHEN jd.type_donnees IS NOT NULL
@@ -55,22 +57,22 @@ COPY (
         NULL::text AS keywords,
         jd.dom_marin AS marine_domain,
         jd.dom_terrestre AS terrestrial_domain,
-        CASE 
+        CASE
             WHEN obj.cd_nomenclature IS NOT NULL
                 THEN obj.cd_nomenclature::varchar(25)
             ELSE '1.1' -- Observations naturalistes opportunistes
-        END AS code_nomenclature_dataset_objectif,  
+        END AS code_nomenclature_dataset_objectif,
         NULL::double precision AS bbox_west,
         NULL::double precision AS bbox_est,
         NULL::double precision AS bbox_south,
         NULL::double precision AS bbox_north,
-        CASE 
+        CASE
             WHEN mc.cd_nomenclature IS NOT NULL
                 THEN mc.cd_nomenclature
             ELSE '1' -- Observation directe
-        END AS code_nomenclature_collecting_method,    
-        CASE 
-            WHEN ori.lib_valeur::text = 'Privée'::text 
+        END AS code_nomenclature_collecting_method,
+        CASE
+            WHEN ori.lib_valeur::text = 'Privée'::text
                 OR ori.lib_valeur::text = 'Publique'::TEXT
                     THEN ori.cd_nomenclature::text
             ELSE 'NSP'::text -- Ne sait pas
@@ -80,79 +82,79 @@ COPY (
                 THEN sta.cd_nomenclature
             ELSE 'NSP' -- Ne Sait Pas
         END AS code_nomenclature_source_status,
-        ARRAY[ARRAY[ 
-            CASE 
-                WHEN ter.cd_nomenclature IS NULL 
+        ARRAY[ARRAY[
+            CASE
+                WHEN ter.cd_nomenclature IS NULL
                     THEN 'METROP'
                 ELSE ter.cd_nomenclature
-            END, 'Métropole']] 
+            END, 'Métropole']]
         AS cor_territory,
         ARRAY[
-    		CASE 
-    			WHEN jd.acteur_principal IS NOT NULL
-    				THEN ARRAY [COALESCE(
-						(CASE
-							WHEN lower(pri.uuid_national) ~* '^\s*$'
-								THEN NULL 
-							WHEN lower(pri.uuid_national) IS NOT NULL 
-								AND pri.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+            CASE
+                WHEN jd.acteur_principal IS NOT NULL
+                    THEN ARRAY [COALESCE(
+                        (CASE
+                            WHEN lower(pri.uuid_national) ~* '^\s*$'
+                                THEN NULL
+                            WHEN lower(pri.uuid_national) IS NOT NULL
+                                AND pri.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
                                 THEN lower(pri.uuid_national)
-						    ELSE NULL
-						END),
-					pri.permid::varchar
-					), '1'] -- Contact principal
-    		    ELSE NULL::varchar[]
-    		END] ||
-    		CASE 
-    			WHEN jd.acteur_financeur IS NOT NULL
-    				THEN ARRAY [COALESCE(
-						(CASE
-							WHEN lower(fi.uuid_national) ~* '^\s*$'
-								THEN NULL 
-							WHEN lower(fi.uuid_national) IS NOT NULL 
-								AND fi.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+                            ELSE NULL
+                        END),
+                    pri.permid::varchar
+                    ), '1'] -- Contact principal
+                ELSE NULL::varchar[]
+            END] ||
+            CASE
+                WHEN jd.acteur_financeur IS NOT NULL
+                    THEN ARRAY [COALESCE(
+                        (CASE
+                            WHEN lower(fi.uuid_national) ~* '^\s*$'
+                                THEN NULL
+                            WHEN lower(fi.uuid_national) IS NOT NULL
+                                AND fi.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
                                 THEN lower(fi.uuid_national)
-						ELSE NULL
-						END),
-					fi.permid::varchar
-					), '2'] -- Financeur
-    		    ELSE NULL::varchar[]
-    		END ||
-    		CASE 
-    			WHEN jd.acteur_metadata IS NOT NULL
-    				THEN ARRAY [COALESCE(
-						(CASE
-							WHEN lower(fo.uuid_national) ~* '^\s*$'
-								THEN NULL 
-							WHEN lower(fo.uuid_national) IS NOT NULL 
-								AND fo.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
-								THEN lower(fo.uuid_national)
-						ELSE NULL
-						END),
-					fo.permid::varchar
-					), '5'] -- Fournisseur
-    		ELSE NULL::varchar[]
-    		END ||
-    		CASE 
-    			WHEN jd.acteur_producteur IS NOT NULL
-    				THEN ARRAY [COALESCE(
-						(CASE
-							WHEN lower(pro.uuid_national) ~* '^\s*$'
-								THEN NULL 
-							WHEN lower(pro.uuid_national) IS NOT NULL 
-								AND pro.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
-								THEN lower(pro.uuid_national)
-						ELSE NULL
-						END),
-					pro.permid::varchar
-					), '6'] -- producteur
-    		    ELSE NULL::varchar[]
-    		END AS cor_actors_organism,
-		CASE 
-			WHEN jd.acteur_principal = 2785
-				THEN ARRAY[ARRAY[lower('4690f8e2-78da-4d6b-9c63-6c506c45a50b'), '1']] -- Contact principal JMG
-	        ELSE NULL
-		END AS cor_actors_user,
+                        ELSE NULL
+                        END),
+                    fi.permid::varchar
+                    ), '2'] -- Financeur
+                ELSE NULL::varchar[]
+            END ||
+            CASE
+                WHEN jd.acteur_metadata IS NOT NULL
+                    THEN ARRAY [COALESCE(
+                        (CASE
+                            WHEN lower(fo.uuid_national) ~* '^\s*$'
+                                THEN NULL
+                            WHEN lower(fo.uuid_national) IS NOT NULL
+                                AND fo.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+                                THEN lower(fo.uuid_national)
+                        ELSE NULL
+                        END),
+                    fo.permid::varchar
+                    ), '5'] -- Fournisseur
+            ELSE NULL::varchar[]
+            END ||
+            CASE
+                WHEN jd.acteur_producteur IS NOT NULL
+                    THEN ARRAY [COALESCE(
+                        (CASE
+                            WHEN lower(pro.uuid_national) ~* '^\s*$'
+                                THEN NULL
+                            WHEN lower(pro.uuid_national) IS NOT NULL
+                                AND pro.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+                                THEN lower(pro.uuid_national)
+                        ELSE NULL
+                        END),
+                    pro.permid::varchar
+                    ), '6'] -- producteur
+                ELSE NULL::varchar[]
+            END AS cor_actors_organism,
+        CASE
+            WHEN jd.acteur_principal = 2785
+                THEN ARRAY[ARRAY[lower('4690f8e2-78da-4d6b-9c63-6c506c45a50b'), '1']] -- Contact principal JMG
+            ELSE NULL
+        END AS cor_actors_user,
         jsonb_build_object(
             'idUserCreationJdd',jd.id_user_creation_jdd, 'methodCollect', jd.method_collect
         )::jsonb AS additional_data,
@@ -176,7 +178,7 @@ COPY (
         LEFT JOIN sinp.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
         LEFT JOIN flore.permid_organism_uuid_duplicates poud on poud.id_org = jd.acteur_principal
             or poud.id_org = jd.acteur_financeur
-            or poud.id_org = jd.acteur_metadata 
+            or poud.id_org = jd.acteur_metadata
             or poud.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme pri ON pri.id_org = jd.acteur_principal
         LEFT JOIN referentiels.organisme pro ON pro.id_org = jd.acteur_producteur
@@ -190,7 +192,5 @@ COPY (
     --     LEFT JOIN suivi_uuid su ON jd.uuid_jdd = su.permid,
     --    date_der_exp
     --  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
-) TO '/tmp/dataset.csv' WITH(format csv, header, delimiter E'\t', null '\N');
-     
-DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
-    
+) TO '/tmp/dataset.csv'
+WITH(format csv, header, delimiter E'\t', null '\N');

@@ -37,7 +37,6 @@ psql -h "localhost" -U "cbionda" -d "si_cbn" -f "/home/cbionda/workspace/geonatu
 echo 'create utils functions'
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_rank.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_rank.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref.csv
-psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/taxref_modifs.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/taxref_modifs.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/source.sql" > /home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/geonature/data/raw/source.csv
 psql --no-psqlrc -h localhost -U cbionda -d si_cbn -v organismsDuplicatesCsvFilePath="'/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/csv/permid_organism_uuid_duplicates.csv'" -f "/home/cbionda/workspace/geonature/migration_data_simethis/cbna-si-data/simethis/data/sql/organism.sql"
 sudo chown cbionda /tmp/organism.csv
