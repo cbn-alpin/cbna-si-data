@@ -1,6 +1,6 @@
 #!/bin/bash
 # Encoding : UTF-8
-# Import some updated, deleted or new data in GeoNature Database the CBNA Flora Data.
+# Import some updated, deleted or new data in GeoNature Database the CBNA Flora Database.
 
 #+----------------------------------------------------------------------------------------------------------+
 # Configure script execute options
@@ -74,10 +74,10 @@ function main() {
     prepareDb
     buildTablePrefix
 
-    parseCsv "taxref rangs" "tr"
-    executeCopy "taxref rangs"
-    displayStats "taxref rangs"
-    executeUpgradeScript "taxref rangs" "insert"
+    parseCsv "taxref rank" "tr"
+    executeCopy "taxref rank"
+    displayStats "taxref rank"
+    executeUpgradeScript "taxref rank" "insert"
 
     parseCsv "taxref" "t"
     executeCopy "taxref"
@@ -149,7 +149,6 @@ function precheck() {
     else
         printVerbose "Found directory '${raw_dir}': ${Gre-}OK" ${Gra-}
     fi
-
 }
 
 function downloadDataArchive() {

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Encoding : UTF-8
-# Keep a history of custom TaxRef  changes made by CBNA .
-# These modifications are stored in the 'cbna' schema of the GeoNature database..
+# Maintain a history of standards changes (customization) made by CBNA.
+# These modifications are stored in the 'cbna' schema of the GeoNature database.
 
 #+----------------------------------------------------------------------------------------------------------+
 # Configure script execute options
@@ -70,10 +70,8 @@ function main() {
 
     buildTablePrefix
 
-    executeCopy "taxref rangs"
-    executeCopy "taxref modifs"
-
-    read -r -n 1 key # Move to a new line
+    executeCopy "taxref rank"
+    executeCopy "taxref"
 
     #+----------------------------------------------------------------------------------------------------------+
     # Display script execution infos
@@ -88,31 +86,28 @@ function executeCopy() {
     if [[ $# -lt 1 ]]; then
         exitScript "Missing required argument to ${FUNCNAME[0]}()!" 2
     fi
-
     local type="${1,,}"
-
     local data_type="${type// /_}"
     local data_type_abbr=$(echo "${type}" | sed 's/\(.\)[^ ]* */\1/g')
     if [[ "${#data_type_abbr}" = "1" ]]; then
         data_type_abbr="${data_type}"
     fi
-
-    # Exit if CSV file not found
-    if ! [[ -f "${raw_dir}/${cbna_import_date}_${data_type}.csv" ]]; then
-        return 0
-    fi
-
     local table="${table_prefix}_${data_type}"
     local sql_file="${sql_dir}/${data_type}/copy.sql"
+    local csv_file="${raw_dir}/${data_type}.csv"
     local psql_var="${data_type_abbr}ImportTable"
 
     printMsg "Copy ${type^^} in GeoNature database..."
-    sudo -n -u "${pg_admin_name}" -s \
-        psql -d "${db_name}" \
-            -v "${psql_var}=${table}" \
-            -v gnDbOwner="${db_user}" \
-            -v csvFilePath="${raw_dir}/${cbna_import_date}_${data_type}.csv" \
-            -f "${sql_file}"
+    if [[ -f "${csv_file}" ]]; then
+        sudo -n -u "${pg_admin_name}" -s \
+            psql -d "${db_name}" \
+                -v "${psql_var}=${table}" \
+                -v gnDbOwner="${db_user}" \
+                -v csvFilePath="${csv_file}" \
+                -f "${sql_file}"
+    else
+        printVerbose "Skip copy of ${type^^}. CSV file was not found : ${csv_file}" ${Gra}
+    fi
 }
 
 
