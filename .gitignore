@@ -1,6 +1,5 @@
 .vscode/
 venv/
-**/data/raw/
 var/
 logs/
 log/
