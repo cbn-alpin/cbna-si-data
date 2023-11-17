@@ -150,7 +150,7 @@ COPY (
     		END AS cor_actors_organism,
 		CASE 
 			WHEN jd.acteur_principal = 2785
-				THEN ARRAY[ARRAY[lower('e76d8558-903a-5142-8d75-16027401c3b3'), '1']] -- Contact principal JMG
+				THEN ARRAY[ARRAY[lower('4690f8e2-78da-4d6b-9c63-6c506c45a50b'), '1']] -- Contact principal JMG
 	        ELSE NULL
 		END AS cor_actors_user,
         jsonb_build_object(
