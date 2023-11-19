@@ -23,7 +23,7 @@ BEGIN
                                 WHERE rel.id_org_obs1 = org1.id_org )
                         ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
                     END,')',
-                    concat(' [',uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', rel.id_obs1)),']') -- uuid obs1
+                    concat(' [', flore.check_cbna_agent(rel.id_obs1, rel.date_releve_deb), ']') -- uuid obs1
                 )
             ELSE NULL
         END,
@@ -43,7 +43,7 @@ BEGIN
                                 WHERE rel.id_org_obs2 = org2.id_org )
                         ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
                     END,')',
-                    concat(' [',uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', rel.id_obs2)),']') -- uuid obs2
+                    concat(' [', flore.check_cbna_agent(rel.id_obs2, rel.date_releve_deb), ']') -- uuid obs2
                 )
             ELSE NULL
         END,
@@ -63,7 +63,7 @@ BEGIN
                                 WHERE rel.id_org_obs3 = org3.id_org )
                         ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
                     END,')',
-                    concat(' [',uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', rel.id_obs3)),']') -- uuid obs3
+                    concat(' [', flore.check_cbna_agent(rel.id_obs3, rel.date_releve_deb), ']') -- uuid obs3
                 )
             ELSE NULL
         END,
@@ -83,7 +83,7 @@ BEGIN
                                 WHERE rel.id_org_obs4 = org4.id_org )
                         ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
                     END,')',
-                    concat(' [',uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', rel.id_obs4)),']') -- uuid obs4
+                    concat(' [', flore.check_cbna_agent(rel.id_obs4, rel.date_releve_deb), ']') -- uuid obs4
                 )
             ELSE NULL
         END,
@@ -103,18 +103,24 @@ BEGIN
                                 WHERE rel.id_org_obs5 = org5.id_org )
                         ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
                     END,')',
-                    concat(' [',uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', rel.id_obs5)),']') -- uuid obs5
+                    concat(' [', flore.check_cbna_agent(rel.id_obs5, rel.date_releve_deb), ']') -- uuid obs5
                 )
             ELSE NULL
         END
     )
-    FROM flore.releve rel
-        LEFT JOIN referentiels.observateur obs1 ON rel.id_obs1 = obs1.id_obs
-        LEFT JOIN referentiels.observateur obs2 ON rel.id_obs2 = obs2.id_obs
-        LEFT JOIN referentiels.observateur obs3 ON rel.id_obs3 = obs3.id_obs
-        LEFT JOIN referentiels.observateur obs4 ON rel.id_obs4 = obs4.id_obs
-        LEFT JOIN referentiels.observateur obs5 ON rel.id_obs5 = obs5.id_obs
-        LEFT JOIN referentiels.organisme orgf ON rel.id_org_f = orgf.id_org
+    FROM flore.releve AS rel
+        LEFT JOIN referentiels.observateur AS obs1
+            ON rel.id_obs1 = obs1.id_obs
+        LEFT JOIN referentiels.observateur AS obs2
+            ON rel.id_obs2 = obs2.id_obs
+        LEFT JOIN referentiels.observateur AS obs3
+            ON rel.id_obs3 = obs3.id_obs
+        LEFT JOIN referentiels.observateur AS obs4
+            ON rel.id_obs4 = obs4.id_obs
+        LEFT JOIN referentiels.observateur AS obs5
+            ON rel.id_obs5 = obs5.id_obs
+        LEFT JOIN referentiels.organisme AS orgf
+            ON rel.id_org_f = orgf.id_org
     WHERE rel.id_releve = $1;
 
     RETURN generate_observers;

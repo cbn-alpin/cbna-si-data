@@ -1,10 +1,10 @@
--- function check cbna agent uuid/observers and generate observers uuid when uuid is null. Return a unique_id uuid
-
 CREATE OR REPLACE FUNCTION flore.check_cbna_agent(observer_id integer, date_releve date)
- RETURNS uuid
- LANGUAGE plpgsql
- SECURITY DEFINER
+    RETURNS uuid
+    LANGUAGE plpgsql
+    SECURITY DEFINER
 AS $function$
+    --Check cbna agent uuid/observers and generate observers uuid when uuid is null.
+    -- Return an unique_id uuid.
     DECLARE
         cbna_agent_unique_id uuid;
 
@@ -14,8 +14,8 @@ AS $function$
         SELECT INTO cbna_agent_unique_id
             CASE
                 WHEN ca.gid IS NOT NULL
-                        THEN ca.uuid
-                        ELSE concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', observer_id)))::uuid
+                    THEN ca.uuid
+                ELSE concat(uuid_generate_v5(uuid_ns_url(), concat('https://simethis.eu/referentiels/observateur/', observer_id)))::uuid
             END AS unique_id
         FROM referentiels.observateur o
             LEFT JOIN flore.cbna_agent ca
@@ -31,13 +31,13 @@ AS $function$
 $function$
 ;
 
--- function build a simple json object with a CASE WHEN. Return a json object
-
 CREATE OR REPLACE FUNCTION public.build_simple_json_object(fieldkey character varying, fieldvalue anyelement)
- RETURNS jsonb
- LANGUAGE plpgsql
- SECURITY DEFINER
+    RETURNS jsonb
+    LANGUAGE plpgsql
+    SECURITY DEFINER
 AS $function$
+    -- Build a simple json object with a CASE WHEN.
+    -- Return a json object.
     DECLARE
         jsonObject jsonb;
 
@@ -56,9 +56,9 @@ $function$
 
 
 CREATE OR REPLACE FUNCTION public.delete_space(txtWithSpace varchar)
- RETURNS text
- LANGUAGE plpgsql
- SECURITY DEFINER
+    RETURNS text
+    LANGUAGE plpgsql
+    SECURITY DEFINER
 AS $function$
     DECLARE
         txtWithoutSpace text;

@@ -1,6 +1,7 @@
-DROP TABLE IF EXISTS flore.cbna_agent;
+DROP TABLE IF EXISTS flore.cbna_agent ;
 
--- Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
+-- Create table, drop at the end of the script, in order to list CBNA agents
+-- of the conservation and knowledge services of the CBNA
 CREATE TABLE flore.cbna_agent (
     gid SERIAL PRIMARY KEY,
     uuid UUID,
@@ -8,55 +9,60 @@ CREATE TABLE flore.cbna_agent (
     first_name VARCHAR(100),
     entry_date DATE,
     release_date DATE
-);
+) ;
 
 -- Insert datas from CSV file to table
 COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
 FROM :'cbnaAgentCsvFilePath'
 DELIMITER ','
-CSV HEADER;
+CSV HEADER ;
 
 -- Agent uuid recovery in the table
 UPDATE flore.cbna_agent AS ca
 SET uuid = u.permid
 FROM applications.utilisateur AS u
-WHERE u.id_groupe = 1 AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name)) AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name));
+WHERE u.id_groupe = 1
+    AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name))
+    AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name)) ;
 
 COPY (
-    WITH
--- CTE Observation records produced on the CBNA territory, CBNA Territory Observers
-        releves_sialp AS(
-            SELECT
-                rel.id_releve,
-                rel.date_releve_deb,
-                rel.date_releve_fin,
-                rel.id_obs1,
-                rel.id_obs2,
-                rel.id_obs3,
-                rel.id_obs4,
-                rel.id_obs5,
-                lower(COALESCE(
-                    (CASE
-                        WHEN org.uuid_national ~* '^\s*$'
-                            THEN NULL
-                        WHEN org.uuid_national IS NOT NULL
-                            THEN org.uuid_national
-                        ELSE NULL
-                    END),
-                    org.permid::varchar
-                    )) AS code_organism
-            FROM flore.releve rel
-                LEFT JOIN referentiels.organisme org ON org.id_org = rel.id_org_f
-            WHERE
-            (rel.meta_id_groupe = 1
-                OR  (rel.meta_id_groupe <> 1 AND rel.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
+    WITH releves_sialp AS (
+        -- CTE Observation records produced on the CBNA territory, CBNA Territory Observers
+        SELECT
+            rel.id_releve,
+            rel.date_releve_deb,
+            rel.date_releve_fin,
+            rel.id_obs1,
+            rel.id_obs2,
+            rel.id_obs3,
+            rel.id_obs4,
+            rel.id_obs5,
+            lower(COALESCE(
+                (CASE
+                    WHEN org.uuid_national ~* '^\s*$'
+                        THEN NULL
+                    WHEN org.uuid_national IS NOT NULL
+                        THEN org.uuid_national
+                    ELSE NULL
+                END),
+                org.permid::varchar
+            )) AS code_organism
+        FROM flore.releve rel
+            LEFT JOIN referentiels.organisme AS org
+                ON org.id_org = rel.id_org_f
+        WHERE (
+            rel.meta_id_groupe = 1
+            OR  (
+                rel.meta_id_groupe <> 1
+                AND rel.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')
+            )
         )
--- CBNA accreditation territory observers
+    )
+    -- CBNA accreditation territory observers
     SELECT DISTINCT ON (cbna_roles.unique_id) *
     FROM (
         SELECT DISTINCT ON (observers.unique_id) *
         FROM (
-
             SELECT
                 flore.check_cbna_agent(r.id_obs1, r.date_releve_deb) AS unique_id, --obs1
                 NULL AS identifier,
@@ -175,11 +181,11 @@ COPY (
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs5
 
-            ) AS observers
+        ) AS observers
 
         UNION
 
-    -- CBNA users
+        -- CBNA users
         SELECT DISTINCT ON (users.unique_id) *
         FROM (
             (
@@ -209,7 +215,7 @@ COPY (
 
             UNION
 
-    -- Users outside CBNA but whose observations are located in the accreditation territory
+            -- Users outside CBNA but whose observations are located in the accreditation territory
             (
             SELECT DISTINCT ON (u.permid)
                 u.permid AS unique_id,
@@ -239,7 +245,7 @@ COPY (
 
             UNION
 
-    -- Digitisers
+            -- Digitisers
             (
             SELECT DISTINCT ON (u.permid)
                 CASE
@@ -265,7 +271,7 @@ COPY (
                 (r.meta_id_groupe = 1
                     OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
             )
-        )AS users
+        ) AS users
     )AS cbna_roles
 ) TO '/tmp/user.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
