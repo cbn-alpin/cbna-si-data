@@ -63,6 +63,7 @@ function main() {
     parseScriptOptions "${@}"
     loadScriptConfig "${setting_file_path-}"
     redirectOutput "${cbna_log_imports}"
+    checkSuperuser
 
     #+----------------------------------------------------------------------------------------------------------+
     # Start script
