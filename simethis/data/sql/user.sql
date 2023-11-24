@@ -95,7 +95,7 @@ COPY (
                 public.delete_space(o.email) AS email,
                 r.code_organism,
                 public.delete_space(o.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', o.code,
                     'idGroupe', o.meta_id_groupe,
@@ -119,7 +119,7 @@ COPY (
                 public.delete_space(o.email) AS email,
                 r.code_organism,
                 public.delete_space(o.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', o.code,
                     'idGroupe', o.meta_id_groupe,
@@ -143,7 +143,7 @@ COPY (
                 public.delete_space(o.email) AS email,
                 r.code_organism,
                 public.delete_space(o.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', o.code,
                     'idGroupe', o.meta_id_groupe,
@@ -167,7 +167,7 @@ COPY (
                 public.delete_space(o.email) AS email,
                 r.code_organism,
                 public.delete_space(o.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', o.code,
                     'idGroupe', o.meta_id_groupe,
@@ -197,7 +197,7 @@ COPY (
                 public.delete_space(u.email) AS email,
                 lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism,
                 public.delete_space(u.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', u.code,
                     'idGroupe', u.id_groupe,
@@ -225,7 +225,7 @@ COPY (
                 public.delete_space(u.email) AS email,
                 lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism,
                 public.delete_space(u.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', u.code,
                     'idGroupe', u.id_groupe,
@@ -259,7 +259,7 @@ COPY (
                 public.delete_space(u.email) AS email,
                 lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism,
                 public.delete_space(u.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 NULL AS additional_data,
                 u.meta_date_saisie::timestamp AS meta_create_date,
                 u.meta_date_maj::timestamp AS meta_update_date,
