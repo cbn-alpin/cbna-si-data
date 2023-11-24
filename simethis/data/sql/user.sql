@@ -71,7 +71,7 @@ COPY (
                 public.delete_space(o.email) AS email,
                 r.code_organism,
                 public.delete_space(o.comm) AS "comment",
-                NULL AS "enable",
+                true AS "enable",
                 jsonb_build_object(
                     'code', o.code,
                     'idGroupe', o.meta_id_groupe,
