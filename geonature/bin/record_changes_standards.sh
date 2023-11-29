@@ -70,6 +70,8 @@ function main() {
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
     buildTablePrefix
+    downloadDataArchive
+    extractArchive
 
     executeCopy "taxref rank"
     executeCopy "taxref"
@@ -81,6 +83,31 @@ function main() {
 
 function buildTablePrefix() {
     table_prefix="${app_code}_${cbna_import_date//-/}"
+}
+
+function downloadDataArchive() {
+    printMsg "Downloading ${app_code^^} data archive..."
+
+    if [[ ! -f "${raw_dir}/${cbna_filename_archive}" ]]; then
+        downloadSftp "${sftp_user}" "${sftp_pwd}" \
+            "${sftp_host}" "${sftp_port}" \
+            "/${cbna_archive_path}/${cbna_filename_archive}" "${raw_dir}/${cbna_filename_archive}"
+     else
+        printVerbose "Archive file \"${cbna_filename_archive}\" already downloaded." ${Gra}
+    fi
+}
+
+function extractArchive() {
+    printMsg "Extract import data CSV files..."
+
+    if [[ -f "${raw_dir}/${cbna_filename_archive}" ]]; then
+        if [[ ! -f "${raw_dir}/${cbna_filename_synthese}" ]]; then
+            cd "${raw_dir}/"
+            tar jxvf "${raw_dir}/${cbna_filename_archive}"
+        else
+            printVerbose "CSV files already extracted." ${Gra}
+        fi
+    fi
 }
 
 function executeCopy() {
