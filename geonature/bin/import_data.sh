@@ -130,6 +130,7 @@ function main() {
     executeUpgradeScript "source" "delete"
 
     reloadCorAreaSynthese
+    finalizeUserImport
 
     #+----------------------------------------------------------------------------------------------------------+
     # Display script execution infos
@@ -182,6 +183,9 @@ function prepareDb() {
     export PGPASSWORD="${db_pass}"; \
         psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
             -f "${sql_shared_dir}/utils_functions.sql"
+    export PGPASSWORD="${db_pass}"; \
+        psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
+            -f "${sql_dir}/post-db-install.sql"
 }
 
 function buildTablePrefix() {
@@ -323,6 +327,14 @@ function reloadCorAreaSynthese() {
     export PGPASSWORD="${db_pass}"; \
         psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
             -f "${sql_shared_dir}/reload_cor_area_synthese.sql"
+}
+
+function finalizeUserImport() {
+    printMsg "Finalize integration of users in GN Siflora database"
+
+    export PGPASSWORD="${db_pass}"; \
+        psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
+            -f "${sql_dir}/post-data-integration.sql"
 }
 
 function maintainDb() {
