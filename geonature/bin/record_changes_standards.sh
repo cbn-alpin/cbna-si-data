@@ -69,9 +69,10 @@ function main() {
     # Start script
     printInfo "${app_name} script started at: ${fmt_time_start}"
 
-    buildTablePrefix
+    precheck
     downloadDataArchive
     extractArchive
+    buildTablePrefix
 
     executeCopy "taxref rank"
     executeCopy "taxref"
@@ -81,8 +82,19 @@ function main() {
     displayTimeElapsed
 }
 
-function buildTablePrefix() {
-    table_prefix="${app_code}_${cbna_import_date//-/}"
+function precheck() {
+    printMsg "Check binaries and directories"
+
+    printVerbose "Check all necessary binaries" ${Gra-}
+    local readonly commands=("tar" "psql" "pipenv" "sed")
+    checkBinary "${commands[@]}"
+
+    printVerbose "Check if the raw data directory exists" ${Gra-}
+    if [[ ! -d "${raw_dir}" ]]; then
+        exitScript "Directory '${raw_dir}' does not exist."
+    else
+        printVerbose "Found directory '${raw_dir}': ${Gre-}OK" ${Gra-}
+    fi
 }
 
 function downloadDataArchive() {
@@ -108,6 +120,10 @@ function extractArchive() {
             printVerbose "CSV files already extracted." ${Gra}
         fi
     fi
+}
+
+function buildTablePrefix() {
+    table_prefix="${app_code}_${cbna_import_date//-/}"
 }
 
 function executeCopy() {
