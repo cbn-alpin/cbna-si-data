@@ -22,7 +22,7 @@ COPY (
             SELECT DISTINCT(id_org)
                 id_org
             FROM referentiels.organisme o
-                JOIN sinp.metadata_jdd mjorg
+                JOIN referentiels.metadata_jdd mjorg
                     ON (mjorg.acteur_principal = o.id_org
                         OR mjorg.acteur_metadata = o.id_org
                         OR mjorg.acteur_producteur = o.id_org
