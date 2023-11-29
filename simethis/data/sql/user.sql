@@ -25,6 +25,21 @@ WHERE u.id_groupe = 1
     AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name))
     AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name)) ;
 
+DROP TABLE IF EXISTS flore.permid_organism_uuid_duplicates;
+
+CREATE TABLE flore.permid_organism_uuid_duplicates (
+    gid SERIAL PRIMARY KEY,
+    permid UUID,
+    id_org SMALLSERIAL,
+    "name" VARCHAR
+);
+
+-- Insert datas from CSV file to table
+COPY flore.permid_organism_uuid_duplicates(permid, id_org, "name")
+FROM :'organismsDuplicatesCsvFilePath'
+DELIMITER ','
+CSV HEADER;
+
 COPY (
     WITH releves_sialp AS (
         -- CTE Observation records produced on the CBNA territory, CBNA Territory Observers
@@ -37,19 +52,12 @@ COPY (
             rel.id_obs3,
             rel.id_obs4,
             rel.id_obs5,
-            lower(COALESCE(
-                (CASE
-                    WHEN org.uuid_national ~* '^\s*$'
-                        THEN NULL
-                    WHEN org.uuid_national IS NOT NULL
-                        THEN org.uuid_national
-                    ELSE NULL
-                END),
-                org.permid::varchar
-            )) AS code_organism
+            rel.id_org_obs1,
+            rel.id_org_obs2,
+            rel.id_org_obs3,
+            rel.id_org_obs4,
+            rel.id_org_obs5
         FROM flore.releve rel
-            LEFT JOIN referentiels.organisme AS org
-                ON org.id_org = rel.id_org_f
         WHERE (
             rel.meta_id_groupe = 1
             OR  (
@@ -69,7 +77,17 @@ COPY (
                 public.delete_space(o.prenom) AS firstname,
                 o.nom AS "name",
                 public.delete_space(o.email) AS email,
-                r.code_organism,
+                COALESCE(
+		            (CASE
+		                WHEN lower(org.uuid_national) ~* '^\s*$'
+		                    THEN NULL
+		                WHEN lower(org.uuid_national) IS NOT NULL
+		                    AND org.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+		                    THEN lower(org.uuid_national)
+		                ELSE NULL
+		            END),
+		            org.permid::varchar
+		        ) AS code_organisme,
                 public.delete_space(o.comm) AS "comment",
                 true AS "enable",
                 jsonb_build_object(
@@ -84,6 +102,7 @@ COPY (
                 'I'::char(1) AS meta_last_action
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs1
+                JOIN referentiels.organisme org ON org.id_org = r.id_org_obs1
 
             UNION
 
@@ -93,7 +112,17 @@ COPY (
                 public.delete_space(o.prenom) AS firstname,
                 o.nom AS "name",
                 public.delete_space(o.email) AS email,
-                r.code_organism,
+                COALESCE(
+		            (CASE
+		                WHEN lower(org.uuid_national) ~* '^\s*$'
+		                    THEN NULL
+		                WHEN lower(org.uuid_national) IS NOT NULL
+		                    AND org.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+		                    THEN lower(org.uuid_national)
+		                ELSE NULL
+		            END),
+		            org.permid::varchar
+		        ) AS code_organisme,
                 public.delete_space(o.comm) AS "comment",
                 true AS "enable",
                 jsonb_build_object(
@@ -108,6 +137,7 @@ COPY (
                 'I'::char(1) AS meta_last_action
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs2
+                JOIN referentiels.organisme org ON org.id_org = r.id_org_obs2
 
             UNION
 
@@ -117,7 +147,17 @@ COPY (
                 public.delete_space(o.prenom) AS firstname,
                 o.nom AS "name",
                 public.delete_space(o.email) AS email,
-                r.code_organism,
+                COALESCE(
+		            (CASE
+		                WHEN lower(org.uuid_national) ~* '^\s*$'
+		                    THEN NULL
+		                WHEN lower(org.uuid_national) IS NOT NULL
+		                    AND org.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+		                    THEN lower(org.uuid_national)
+		                ELSE NULL
+		            END),
+		            org.permid::varchar
+		        ) AS code_organisme,
                 public.delete_space(o.comm) AS "comment",
                 true AS "enable",
                 jsonb_build_object(
@@ -132,6 +172,7 @@ COPY (
                 'I'::char(1) AS meta_last_action
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs3
+                JOIN referentiels.organisme org ON org.id_org = r.id_org_obs3
 
             UNION
 
@@ -141,7 +182,17 @@ COPY (
                 public.delete_space(o.prenom) AS firstname,
                 o.nom AS "name",
                 public.delete_space(o.email) AS email,
-                r.code_organism,
+                COALESCE(
+		            (CASE
+		                WHEN lower(org.uuid_national) ~* '^\s*$'
+		                    THEN NULL
+		                WHEN lower(org.uuid_national) IS NOT NULL
+		                    AND org.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+		                    THEN lower(org.uuid_national)
+		                ELSE NULL
+		            END),
+		            org.permid::varchar
+		        ) AS code_organisme,
                 public.delete_space(o.comm) AS "comment",
                 true AS "enable",
                 jsonb_build_object(
@@ -156,6 +207,7 @@ COPY (
                 'I'::char(1) AS meta_last_action
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs4
+                JOIN referentiels.organisme org ON org.id_org = r.id_org_obs4
 
             UNION
 
@@ -165,7 +217,17 @@ COPY (
                 public.delete_space(o.prenom) AS firstname,
                 o.nom AS "name",
                 public.delete_space(o.email) AS email,
-                r.code_organism,
+                COALESCE(
+		            (CASE
+		                WHEN lower(org.uuid_national) ~* '^\s*$'
+		                    THEN NULL
+		                WHEN lower(org.uuid_national) IS NOT NULL
+		                    AND org.permid NOT IN (SELECT poud.permid FROM flore.permid_organism_uuid_duplicates poud)
+		                    THEN lower(org.uuid_national)
+		                ELSE NULL
+		            END),
+		            org.permid::varchar
+		        ) AS code_organisme,
                 public.delete_space(o.comm) AS "comment",
                 true AS "enable",
                 jsonb_build_object(
@@ -180,13 +242,15 @@ COPY (
                 'I'::char(1) AS meta_last_action
             FROM releves_sialp AS r
                 JOIN referentiels.observateur o ON o.id_obs = r.id_obs5
+                JOIN referentiels.organisme org ON org.id_org = r.id_org_obs5
 
         ) AS observers
 
         UNION
 
         -- CBNA users
-        SELECT DISTINCT ON (users.unique_id) *
+        SELECT DISTINCT ON (users.unique_id)
+        	*
         FROM (
             (
             SELECT DISTINCT ON (u.permid)

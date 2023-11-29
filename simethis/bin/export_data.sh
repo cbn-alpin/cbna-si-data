@@ -121,12 +121,19 @@ function extractCsv() {
     printMsg "Extract CSV file ${csv_file_name}"
 
     local resources_dir="${data_dir}/resources"
-    if [[ "${csv_file_name}" =~ ^(synthese|user)$ ]]; then
+    if [[ "${csv_file_name}" =~ ^(synthese)$ ]]; then
         PGPASSWORD="${simethis_db_pass}" $psql_simethis --no-psqlrc \
             --host "${simethis_db_host}" --port "${simethis_db_port}" \
             --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
             --variable cbnaAgentCsvFilePath="${resources_dir}/cbna_agent.csv" \
             --file "${sql_dir}/${csv_file_name}.sql"
+    elif [[ "${csv_file_name}" =~ ^(user)$ ]]; then
+    PGPASSWORD="${simethis_db_pass}" $psql_simethis --no-psqlrc \
+        --host "${simethis_db_host}" --port "${simethis_db_port}" \
+        --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
+        --variable cbnaAgentCsvFilePath="${resources_dir}/cbna_agent.csv" \
+        --variable organismsDuplicatesCsvFilePath="${resources_dir}/organism_uuid_duplicates.csv" \
+        --file "${sql_dir}/${csv_file_name}.sql"
     elif [[ "${csv_file_name}" =~ ^(organism|dataset)$ ]]; then
         PGPASSWORD="${simethis_db_pass}" $psql_simethis --no-psqlrc \
             --host "${simethis_db_host}" --port "${simethis_db_port}" \
