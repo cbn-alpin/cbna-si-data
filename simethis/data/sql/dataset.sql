@@ -27,12 +27,12 @@ COPY (
         )
     --        date_der_exp AS (
     --         SELECT max(suivi_export_synth.date_export) AS date_der_exp
-    --           FROM sinp.suivi_export_synth
+    --           FROM referentiels.suivi_export_synth
     --          WHERE suivi_export_synth.bd_cible::text = 'SINP PACA Alp'::text
     --        ), suivi_uuid AS (
     --         SELECT su_1.permid,
     --            su_1.date_last_export
-    --           FROM sinp.suivi_uuid su_1
+    --           FROM referentiels.suivi_uuid su_1
     --          WHERE su_1.reg::text = 'PACA'::text AND su_1.table_sce::text = 'jdd'::text
     --        )
     SELECT DISTINCT ON(unique_id_sinp)
@@ -167,15 +167,15 @@ COPY (
     --            ELSE NULL::text
     --        END AS meta_last_action
     'I'::char(1) AS meta_last_action
-    FROM sinp.metadata_jdd jd
+    FROM referentiels.metadata_jdd jd
         JOIN list_jdd l ON jd.id_jdd = l.id_jdd
-        LEFT JOIN sinp.metadata_ca ca ON jd.id_ca = ca.id_ca
-        LEFT JOIN sinp.metadata_ref td ON jd.type_donnees = td.id_nomenclature
-        LEFT JOIN sinp.metadata_ref obj ON jd.objectif_jdd = obj.id_nomenclature
-        LEFT JOIN sinp.metadata_ref mc ON jd.method_collect = mc.id_nomenclature
-        LEFT JOIN sinp.metadata_ref ori ON jd.data_origine = ori.id_nomenclature
-        LEFT JOIN sinp.metadata_ref sta ON jd.statut_source = sta.id_nomenclature
-        LEFT JOIN sinp.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
+        LEFT JOIN referentiels.metadata_ca ca ON jd.id_ca = ca.id_ca
+        LEFT JOIN referentiels.metadata_ref td ON jd.type_donnees = td.id_nomenclature
+        LEFT JOIN referentiels.metadata_ref obj ON jd.objectif_jdd = obj.id_nomenclature
+        LEFT JOIN referentiels.metadata_ref mc ON jd.method_collect = mc.id_nomenclature
+        LEFT JOIN referentiels.metadata_ref ori ON jd.data_origine = ori.id_nomenclature
+        LEFT JOIN referentiels.metadata_ref sta ON jd.statut_source = sta.id_nomenclature
+        LEFT JOIN referentiels.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
         LEFT JOIN flore.permid_organism_uuid_duplicates poud on poud.id_org = jd.acteur_principal
             or poud.id_org = jd.acteur_financeur
             or poud.id_org = jd.acteur_metadata

@@ -61,11 +61,11 @@ COPY (
         mc.date_maj_ca::TIMESTAMP AS meta_update_date,
         'I' AS meta_last_action
     FROM
-        sinp.metadata_ca mc
-        JOIN sinp.metadata_jdd mj ON mj.id_ca = mc.id_ca
-        LEFT JOIN sinp.metadata_ca mcasup ON mcasup.id_ca = mcasup.id_ca_sup
-        LEFT JOIN sinp.metadata_ref mrter ON mrter.id_nomenclature = mc.niv_terr_ca
-        LEFT JOIN sinp.metadata_ref mrobj ON mrobj.id_nomenclature = mc.objectif_ca
+        referentiels.metadata_ca mc
+        JOIN referentiels.metadata_jdd mj ON mj.id_ca = mc.id_ca
+        LEFT JOIN referentiels.metadata_ca mcasup ON mcasup.id_ca = mcasup.id_ca_sup
+        LEFT JOIN referentiels.metadata_ref mrter ON mrter.id_nomenclature = mc.niv_terr_ca
+        LEFT JOIN referentiels.metadata_ref mrobj ON mrobj.id_nomenclature = mc.objectif_ca
         LEFT JOIN referentiels.organisme o ON o.id_org = mc.acteur_principal
         LEFT JOIN applications.utilisateur u ON u.id_user = mc.id_user_creation_ca
         LEFT JOIN flore.releve r ON r.id_jdd = mj.id_jdd
