@@ -448,7 +448,7 @@ COPY (
         'I' AS meta_last_action
     FROM flore.releve r
         JOIN flore.observation o ON r.id_releve = o.id_releve
-        JOIN sinp.metadata_jdd mj ON r.id_jdd = mj.id_jdd
+        JOIN referentiels.metadata_jdd mj ON r.id_jdd = mj.id_jdd
         LEFT JOIN referentiels.releve_methode rm ON r.id_releve_methode = rm.id_releve_methode
         LEFT JOIN referentiels.biblio b ON r.id_biblio = b.id_biblio
         LEFT JOIN referentiels.nombre_pieds np ON o.id_nombre_pieds = np.id_nombre_pieds
