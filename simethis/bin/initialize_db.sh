@@ -118,10 +118,6 @@ function downloadDumps() {
         local dump_filename="${schema_name}_${simethis_dump_date//-/}.dump"
         local dump_filepath="${simethis_dump_folder}/${dump_filename}"
         if [[ ! -f "${dump_filepath}" ]]; then
-            # TODO: remove this condition for 'sinp' when the dump will be saved like the others.
-            if [[ "${schema_name}" = "sinp" ]]; then
-                dump_filename="${schema_name}_20230824.dump"
-            fi
             printVerbose "Dowloading file \"${dump_filename}\" in progress..." ${Gra}
             downloadSftp "${simethis_sftp_download_user}" "${simethis_sftp_download_pwd}" \
                 "${simethis_sftp_download_host}" "${simethis_sftp_download_port}" \
@@ -210,26 +206,12 @@ function restoreSchema() {
     printMsg "Restore schema ${schema_name}"
 
     local dump_filepath="${simethis_dump_folder}/${schema_name}_${simethis_dump_date//-/}.dump"
-    if [[ ${schema_name} = "sinp" ]]; then
-        PGPASSWORD="${simethis_db_pass}" $psql_simethis \
-            --host ${simethis_db_host} --port "${simethis_db_port}" \
-            --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
-            --command "CREATE SCHEMA IF NOT EXISTS ${schema_name};"
-
         set +e
         PGPASSWORD="${simethis_db_pass}" $pg_restore_simethis --verbose --jobs ${pg_restore_jobs} \
             --host ${simethis_db_host} --port "${simethis_db_port}" \
             --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
             "${dump_filepath}"
         set -e
-    else
-        set +e
-        PGPASSWORD="${simethis_db_pass}" $pg_restore_simethis --verbose --jobs ${pg_restore_jobs} \
-            --host ${simethis_db_host} --port "${simethis_db_port}" \
-            --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
-            "${dump_filepath}"
-        set -e
-    fi
 }
 
 function addUtilsfunctions() {
