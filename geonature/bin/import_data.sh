@@ -185,7 +185,7 @@ function prepareDb() {
             -f "${sql_shared_dir}/utils_functions.sql"
     export PGPASSWORD="${db_pass}"; \
         psql -h "${db_host}" -U "${db_user}" -d "${db_name}" \
-            -v "${pass_plus_admin} -v "${pass_plus_jpmperso}" \
+            -v "${pass_admin} -v "${pass_partner}" \
             -f "${sql_dir}/post-db-install.sql"
 }
 
