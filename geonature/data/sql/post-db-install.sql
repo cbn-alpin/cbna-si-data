@@ -31,7 +31,7 @@ UPDATE utilisateurs.t_roles SET
 	nom_role = 'GÉNÉRAL',
 	remarques='Mise à jour installation.',
 	pass = NULL,
-	pass_plus = '$2b$12$NcwUfJ/kd.60giUoGf8sie2k2.aal5NUhpbb6yhj2ux2sLYQiJYTO'
+	pass_plus = :'pass_plus_admin'
 WHERE id_role = 3 AND identifiant = 'admin';
 UPDATE utilisateurs.t_roles SET
 	id_role = 4,
@@ -42,7 +42,7 @@ UPDATE utilisateurs.t_roles SET
 	desc_role = 'Compte partenaire.',
 	remarques = 'Compte partenaire de test.',
 	pass = NULL,
-	pass_plus = '$2b$12$//uZ4XFIBDcttxAsvI5TI.TLwx0d9RAhLPFqAHxHzwIF6Ry3ZFJjS'
+	pass_plus = :'pass_plus_jpmperso'
 WHERE id_role = 5 AND identifiant = 'partenaire' ;
 
 -- Mise à jour de la séquence de la clé primaire de t_roles
