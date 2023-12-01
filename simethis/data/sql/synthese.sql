@@ -299,34 +299,7 @@ COPY (
         GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
         NULL AS depth_min,
         NULL AS depth_max,
-        CASE
-            WHEN
-                jsonb_strip_nulls(
-                    CASE
-                        WHEN lieudit IS NOT NULL AND lieudit !~* '^\s*$'
-                            THEN jsonb_build_object('lieuditName', lieudit)
-                        ELSE jsonb_build_object('lieuditName', null)
-                    END ||
-                    CASE
-                        WHEN comm_loc IS NOT NULL AND comm_loc !~* '^\s*$'
-                            THEN jsonb_build_object('locationComment', comm_loc)
-                        ELSE jsonb_build_object('locationComment', null)
-                    END
-                )= '{}'
-                THEN NULL
-            ELSE jsonb_strip_nulls(
-                    CASE
-                        WHEN lieudit IS NOT NULL AND lieudit !~* '^\s*$'
-                            THEN jsonb_build_object('lieuditName', lieudit)
-                        ELSE jsonb_build_object('lieuditName', null)
-                    END ||
-                    CASE
-                        WHEN comm_loc IS NOT NULL AND comm_loc !~* '^\s*$'
-                            THEN jsonb_build_object('locationComment', comm_loc)
-                        ELSE jsonb_build_object('locationComment', null)
-                    END
-                )
-        END::varchar(500) AS place_name,
+        concat(public.delete_space(r.lieudit), public.delete_space(r.comm_loc))::varchar(500) AS place_name,
         st_geomfromewkt(
             CASE
                 WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
