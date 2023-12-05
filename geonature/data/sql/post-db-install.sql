@@ -31,18 +31,18 @@ UPDATE utilisateurs.t_roles SET
 	nom_role = 'GÉNÉRAL',
 	remarques='Mise à jour installation.',
 	pass = NULL,
-	pass_plus = :'pass_admin'
+	pass_plus = :'passAdmin'
 WHERE id_role = 3 AND identifiant = 'admin';
 UPDATE utilisateurs.t_roles SET
 	id_role = 4,
-	identifiant = 'jpm-perso',
-	prenom_role = 'Jean-Pascal (Perso)',
-	nom_role = 'MILCENT',
-	email = 'jpm@clapas.org',
+	identifiant = 'partner-test',
+	prenom_role = 'Partenaire',
+	nom_role = 'TEST',
+	email = 'jp.milcent+partner@cbn-alpin.fr',
 	desc_role = 'Compte partenaire.',
 	remarques = 'Compte partenaire de test.',
 	pass = NULL,
-	pass_plus = :'pass_partner'
+	pass_plus = :'passPartner'
 WHERE id_role = 5 AND identifiant = 'partenaire' ;
 
 -- Mise à jour de la séquence de la clé primaire de t_roles
