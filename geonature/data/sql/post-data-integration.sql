@@ -6,7 +6,7 @@ BEGIN;
 -- Mise à jour organisme des utilisateurs pré-existant
 UPDATE utilisateurs.t_roles SET
 	id_organisme = utilisateurs.get_id_organism_by_uuid('72520b54-879f-4f7c-b202-7e546319f4ee') -- Réseau des botanistes correspondants du CBNA
-WHERE identifiant = 'jpm-perso';
+WHERE identifiant = 'partner-test';
 
 -- Ajout des utilisateurs au groupe Administrateurs
 INSERT INTO utilisateurs.cor_roles (
