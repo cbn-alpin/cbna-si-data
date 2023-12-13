@@ -863,5 +863,20 @@ INSERT INTO utilisateurs.cor_roles (
 ON CONFLICT DO NOTHING ;
 
 \echo '----------------------------------------------------------------------------'
+\echo 'Links datasets to module Occtax'
+-- Enables selection of datasets on module Occtax for data entry tests
+-- TO DO: Remove this part after CBNA data is integrated into Occtax
+
+INSERT INTO gn_commons.cor_module_dataset (
+	id_module,
+	id_dataset
+)
+	SELECT
+		gn_commons.get_id_module_bycode('OCCTAX'),
+		id_dataset
+	FROM gn_meta.t_datasets
+ON CONFLICT DO NOTHING ;
+
+\echo '----------------------------------------------------------------------------'
 \echo 'COMMIT if all is ok:'
 COMMIT;
