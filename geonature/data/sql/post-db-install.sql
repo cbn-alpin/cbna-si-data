@@ -3,15 +3,18 @@ BEGIN;
 \echo '-------------------------------------------------------------------------------'
 \echo 'Finalize integration of GN Siflora database'
 
--- Ajout d'un index unique sur le champ t_roles.email
+\echo '-------------------------------------------------------------------------------'
+\echo 'Ajout d''un index unique sur le champ t_roles.email'
 ALTER TABLE utilisateurs.t_roles DROP CONSTRAINT IF EXISTS unique_email;
-ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_email UNIQUE (email)
+ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_email UNIQUE (email);
 
--- Ajout d'un index unique sur le champ t_roles.identifiant
+\echo '-------------------------------------------------------------------------------'
+\echo 'Ajout d''un index unique sur le champ t_roles.identifiant'
 ALTER TABLE utilisateurs.t_roles DROP CONSTRAINT IF EXISTS unique_identifiant;
-ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_identifiant UNIQUE (identifiant)
+ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_identifiant UNIQUE (identifiant);
 
--- Changement de noms des groupes par défaut
+\echo '-------------------------------------------------------------------------------'
+\echo 'Changement de noms des groupes par défaut'
 UPDATE utilisateurs.t_roles SET
 	nom_role = 'Agents'
 WHERE id_role = 1 AND groupe = TRUE;
@@ -19,13 +22,15 @@ UPDATE utilisateurs.t_roles SET
 	nom_role = 'Administrateurs'
 WHERE id_role = 2 AND groupe = TRUE;
 
--- Suppression des utilisateurs exemples inutiles
+\echo '-------------------------------------------------------------------------------'
+\echo 'Suppression des utilisateurs exemples inutiles'
 DELETE FROM utilisateurs.t_roles
 WHERE (id_role = 4 AND identifiant = 'agent')
 	OR (id_role = 6 AND identifiant = 'pierre.paul')
 	OR (id_role = 7 AND identifiant = 'validateur');
 
--- Changement sur les utilisateurs
+\echo '-------------------------------------------------------------------------------'
+\echo 'Changement sur les utilisateurs'
 UPDATE utilisateurs.t_roles SET
 	prenom_role = 'Administrateur',
 	nom_role = 'GÉNÉRAL',
@@ -45,7 +50,8 @@ UPDATE utilisateurs.t_roles SET
 	pass_plus = :'passPartner'
 WHERE id_role = 5 AND identifiant = 'partenaire' ;
 
--- Mise à jour de la séquence de la clé primaire de t_roles
+\echo '-------------------------------------------------------------------------------'
+\echo 'Mise à jour de la séquence de la clé primaire de t_roles'
 SELECT SETVAL(
 	pg_get_serial_sequence('utilisateurs.t_roles', 'id_role'),
 	COALESCE(MAX(id_role) + 1, 1),
@@ -53,7 +59,8 @@ SELECT SETVAL(
 )
 FROM utilisateurs.t_roles;
 
--- Ajout des groupes complémentaires
+\echo '-------------------------------------------------------------------------------'
+\echo 'Ajout des groupes complémentaires'
 INSERT INTO utilisateurs.t_roles (
 	nom_role,
 	groupe,
@@ -90,7 +97,8 @@ INSERT INTO utilisateurs.t_roles (
 )
 ON CONFLICT DO NOTHING ;
 
--- Configuration du groupe Admin vis à vis de GeoNature
+\echo '-------------------------------------------------------------------------------'
+\echo 'Configuration du groupe Admin vis à vis de GeoNature'
 INSERT INTO utilisateurs.cor_profil_for_app (
 	id_profil,
 	id_application
@@ -100,25 +108,26 @@ INSERT INTO utilisateurs.cor_profil_for_app (
 )
 ON CONFLICT DO NOTHING ;
 
--- Association des groupes aux profils pour les applications (GeoNature, TaxHub et UsersHub)
+\echo '-------------------------------------------------------------------------------'
+\echo 'Association des groupes aux profils pour les applications (GeoNature, TaxHub et UsersHub)'
 INSERT INTO utilisateurs.cor_role_app_profil (
 	id_role,
 	id_application,
 	id_profil
 ) VALUES (
-	utilisateurs.get_id_groupe_by_name('Administrateur'),
+	utilisateurs.get_id_group_by_name('Administrateurs'),
 	(SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
 	(SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Administrateur')
 ), (
-	utilisateurs.get_id_groupe_by_name('Validateurs'),
+	utilisateurs.get_id_group_by_name('Validateurs'),
 	(SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
 	(SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 ), (
-	utilisateurs.get_id_groupe_by_name('Partenaires'),
+	utilisateurs.get_id_group_by_name('Partenaires'),
 	(SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
 	(SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 ), (
-	utilisateurs.get_id_groupe_by_name('Datamanagers'),
+	utilisateurs.get_id_group_by_name('Datamanagers'),
 	(SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
 	(SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 )
