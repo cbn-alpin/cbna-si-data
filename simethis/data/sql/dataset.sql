@@ -18,6 +18,12 @@ CSV HEADER;
 
 COPY (
     WITH
+        duplicate_shortname AS (
+            SELECT lib_jdd_court AS shortname
+            FROM referentiels.metadata_jdd
+            GROUP BY lib_jdd_court
+            HAVING COUNT(*) > 1
+        ),
         list_jdd AS (
             SELECT r.id_jdd
             FROM flore.releve r
@@ -25,25 +31,19 @@ COPY (
                 (r.meta_id_groupe = 1
                     OR  (r.meta_id_groupe <> 1 AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')))
         )
-    --        date_der_exp AS (
-    --         SELECT max(suivi_export_synth.date_export) AS date_der_exp
-    --           FROM referentiels.suivi_export_synth
-    --          WHERE suivi_export_synth.bd_cible::text = 'SINP PACA Alp'::text
-    --        ), suivi_uuid AS (
-    --         SELECT su_1.permid,
-    --            su_1.date_last_export
-    --           FROM referentiels.suivi_uuid su_1
-    --          WHERE su_1.reg::text = 'PACA'::text AND su_1.table_sce::text = 'jdd'::text
-    --        )
     SELECT DISTINCT ON(unique_id_sinp)
         jd.uuid_jdd AS unique_id_sinp,
         ca.uuid_ca::varchar(255) AS code_acquisition_framework,
         jd.lib_jdd::varchar(150) AS "name",
-        CASE
-            WHEN ca.uuid_ca = 'b7456c07-9c0b-4e34-abc3-cb35dfc68eb9'
-                THEN 'NEOUE'
-            ELSE jd.lib_jdd_court
-        END AS shortname,
+        COALESCE(
+            (
+                SELECT CONCAT(mj.lib_jdd_court, ' - ', mj.id_jdd)
+                FROM referentiels.metadata_jdd AS mj
+                WHERE mj.id_jdd = jd.id_jdd
+                    AND jd.lib_jdd_court IN (SELECT shortname FROM duplicate_shortname)
+            ),
+            jd.lib_jdd_court
+        ) AS shortname,
         CASE
             WHEN jd.desc_jdd IS NULL
                 THEN ''
@@ -160,13 +160,7 @@ COPY (
         )::jsonb AS additional_data,
         jd.date_creation_jdd::timestamp AS meta_create_date,
         jd.date_maj_jdd::timestamp AS meta_update_date,
-    --        CASE
-    --            WHEN su.permid IS NULL THEN 'I'::text
-    --            WHEN su.permid IS NOT NULL AND l.id_jdd IS NOT NULL THEN 'U'::text
-    --            WHEN su.permid IS NOT NULL AND l.id_jdd IS NULL THEN 'D'::text
-    --            ELSE NULL::text
-    --        END AS meta_last_action
-    'I'::char(1) AS meta_last_action
+        'I'::char(1) AS meta_last_action
     FROM referentiels.metadata_jdd jd
         JOIN list_jdd l ON jd.id_jdd = l.id_jdd
         LEFT JOIN referentiels.metadata_ca ca ON jd.id_ca = ca.id_ca
@@ -176,10 +170,10 @@ COPY (
         LEFT JOIN referentiels.metadata_ref ori ON jd.data_origine = ori.id_nomenclature
         LEFT JOIN referentiels.metadata_ref sta ON jd.statut_source = sta.id_nomenclature
         LEFT JOIN referentiels.metadata_ref ter ON jd.terr_jdd = ter.id_nomenclature
-        LEFT JOIN flore.permid_organism_uuid_duplicates poud on poud.id_org = jd.acteur_principal
-            or poud.id_org = jd.acteur_financeur
-            or poud.id_org = jd.acteur_metadata
-            or poud.id_org = jd.acteur_producteur
+        LEFT JOIN flore.permid_organism_uuid_duplicates poud ON poud.id_org = jd.acteur_principal
+            OR poud.id_org = jd.acteur_financeur
+            OR poud.id_org = jd.acteur_metadata
+            OR poud.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme pri ON pri.id_org = jd.acteur_principal
         LEFT JOIN referentiels.organisme pro ON pro.id_org = jd.acteur_producteur
         LEFT JOIN referentiels.organisme fi ON fi.id_org = jd.acteur_financeur
@@ -189,8 +183,5 @@ COPY (
         LEFT JOIN applications.utilisateur upro ON upro.id_user = jd.acteur_producteur
         LEFT JOIN applications.utilisateur ufi ON ufi.id_user = jd.acteur_financeur
         LEFT JOIN applications.utilisateur ufo ON ufo.id_user = jd.acteur_metadata
-    --     LEFT JOIN suivi_uuid su ON jd.uuid_jdd = su.permid,
-    --    date_der_exp
-    --  WHERE COALESCE(jd.date_maj_jdd, jd.date_creation_jdd) >= COALESCE(su.date_last_export, date_der_exp.date_der_exp) OR su.permid IS NULL
 ) TO '/tmp/dataset.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
