@@ -175,6 +175,12 @@ COPY (
         FROM referentiels.reglementation_taxon rt
         WHERE rt.id_reglementation ILIKE '%SENSI_AURA_%'
         GROUP BY rt.cd_ref, ("right"(rt.id_reglementation::text, 2))
+    ),
+    duplicate_jdd_shortnames AS (
+        SELECT lib_jdd_court AS shortname
+        FROM referentiels.metadata_jdd
+        GROUP BY lib_jdd_court
+        HAVING COUNT(*) > 1
     )
     SELECT DISTINCT ON (unique_id_sinp)
         o.id_observation_sinp AS unique_id_sinp,
@@ -193,7 +199,15 @@ COPY (
                     THEN ovf.nom
             ELSE NULL
         END AS code_source,
-        mj.lib_jdd_court::varchar(255) AS code_dataset,
+        COALESCE(
+            (
+                SELECT CONCAT(jdd.lib_jdd_court, ' - ', jdd.id_jdd)
+                FROM referentiels.metadata_jdd AS jdd
+                WHERE jdd.id_jdd = mj.id_jdd
+                    AND mj.lib_jdd_court IN (SELECT shortname FROM duplicate_jdd_shortnames)
+            ),
+            mj.lib_jdd_court
+        ) AS code_dataset,
         CASE
             WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
                 OR r.id_releve_methode = 10
