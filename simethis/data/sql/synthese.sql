@@ -500,7 +500,7 @@ COPY (
             ON se.cd_ref = o.cd_ref
         LEFT JOIN sensi_dep AS sed
             ON sed.cd_ref = o.cd_ref AND sed.dept = r.insee_dept::varchar AND sed.dept IN ('01', '26', '38', '73', '74')
-        LEFT JOIN flora.validation AS val
+        LEFT JOIN flore.validation AS val
             ON val.id_observation = o.id_observation
     WHERE (
         r.meta_id_groupe = 1
