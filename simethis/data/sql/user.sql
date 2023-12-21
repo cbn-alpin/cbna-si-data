@@ -48,7 +48,7 @@ COPY (
             public.delete_space(u.prenom) AS firstname,
             u.nom AS "name",
             public.delete_space(u.email) AS email,
-            lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism,
+            lower(coalesce(o.uuid_national, o.permid::varchar)) AS code_organism,
             public.delete_space(u.comm) AS "comment",
             TRUE AS "enable",
             jsonb_build_object(
@@ -61,7 +61,7 @@ COPY (
             u.meta_date_saisie::timestamp AS meta_create_date,
             u.meta_date_maj::timestamp AS meta_update_date,
             'I'::char(1) AS meta_last_action
-        FROM applications.utilisateur u
+        FROM applications.utilisateur AS u
             LEFT JOIN referentiels.organisme AS o
                 ON o.id_org = u.id_org
         WHERE u.id_org = 2785
@@ -78,7 +78,7 @@ COPY (
             public.delete_space(u.prenom) AS firstname,
             u.nom AS "name",
             public.delete_space(u.email) AS email,
-            lower(COALESCE(o.uuid_national, o.permid::varchar)) AS code_organism,
+            lower(coalesce(o.uuid_national, o.permid::varchar)) AS code_organism,
             public.delete_space(u.comm) AS "comment",
             TRUE AS "enable",
             NULL::jsonb AS additional_data,
@@ -87,7 +87,33 @@ COPY (
             'I'::char(1) AS meta_last_action
         FROM applications.utilisateur AS u
             JOIN flore.releve AS r
-                ON r.meta_id_user_saisie  = u.id_user
+                ON r.meta_id_user_saisie = u.id_user
+            LEFT JOIN referentiels.organisme AS o
+                ON o.id_org = u.id_org
+        WHERE r.meta_id_groupe = 1
+    ),
+    providers_digitizers AS (
+        SELECT DISTINCT ON (u.permid)
+            3 AS priority,
+            CASE
+                WHEN r.meta_id_user_saisie IS NOT NULL
+                    THEN u.permid
+                ELSE NULL
+            END AS unique_id,
+            u.login AS identifier,
+            public.delete_space(u.prenom) AS firstname,
+            u.nom AS "name",
+            public.delete_space(u.email) AS email,
+            lower(coalesce(o.uuid_national, o.permid::varchar)) AS code_organism,
+            public.delete_space(u.comm) AS "comment",
+            TRUE AS "enable",
+            NULL::jsonb AS additional_data,
+            u.meta_date_saisie::timestamp AS meta_create_date,
+            u.meta_date_maj::timestamp AS meta_update_date,
+            'I'::char(1) AS meta_last_action
+        FROM applications.utilisateur AS u
+            JOIN flore.releve AS r
+                ON r.meta_id_user_saisie = u.id_user
             LEFT JOIN referentiels.organisme AS o
                 ON o.id_org = u.id_org
         WHERE r.meta_id_groupe <> 1
@@ -100,6 +126,8 @@ COPY (
             SELECT * FROM cbna_agents
             UNION
             SELECT * FROM cbna_digitizers
+            UNION
+            SELECT * FROM providers_digitizers
         ) AS all_cbna_users
     ),
     releves_sialp AS (
@@ -134,7 +162,7 @@ COPY (
             public.delete_space(o.prenom) AS firstname,
             o.nom AS "name",
             public.delete_space(o.email) AS email,
-            COALESCE(
+            coalesce(
                 (CASE
                     WHEN lower(org.uuid_national) ~* '^\s*$'
                         THEN NULL
@@ -172,7 +200,7 @@ COPY (
             public.delete_space(o.prenom) AS firstname,
             o.nom AS "name",
             public.delete_space(o.email) AS email,
-            COALESCE(
+            coalesce(
                 (CASE
                     WHEN lower(org.uuid_national) ~* '^\s*$'
                         THEN NULL
@@ -210,7 +238,7 @@ COPY (
             public.delete_space(o.prenom) AS firstname,
             o.nom AS "name",
             public.delete_space(o.email) AS email,
-            COALESCE(
+            coalesce(
                 (CASE
                     WHEN lower(org.uuid_national) ~* '^\s*$'
                         THEN NULL
@@ -248,7 +276,7 @@ COPY (
             public.delete_space(o.prenom) AS firstname,
             o.nom AS "name",
             public.delete_space(o.email) AS email,
-            COALESCE(
+            coalesce(
                 (CASE
                     WHEN lower(org.uuid_national) ~* '^\s*$'
                         THEN NULL
@@ -286,7 +314,7 @@ COPY (
             public.delete_space(o.prenom) AS firstname,
             o.nom AS "name",
             public.delete_space(o.email) AS email,
-            COALESCE(
+            coalesce(
                 (CASE
                     WHEN lower(org.uuid_national) ~* '^\s*$'
                         THEN NULL
@@ -358,16 +386,16 @@ COPY (
         SELECT email
         FROM users
         GROUP BY email
-        HAVING COUNT(*) > 1
+        HAVING count(*) > 1
     )
     SELECT
         unique_id,
         identifier,
         firstname,
         "name",
-        COALESCE(
+        coalesce(
             (
-                SELECT REPLACE(u.email, '@', CONCAT('+', u.unique_id, '@'))
+                SELECT replace(u.email, '@', concat('+', u.unique_id, '@'))
                 FROM users AS u
                 WHERE u.unique_id = users.unique_id
                     AND users.email IN (SELECT email FROM duplicate_emails)
