@@ -26,11 +26,11 @@ $function$
 
 \echo 'Adding a unique index to the t_roles.email field'
 ALTER TABLE utilisateurs.t_roles DROP CONSTRAINT IF EXISTS unique_email;
-ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_email UNIQUE (email)
+ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_email UNIQUE (email) ;
 
 \echo 'Adding a unique index to the t_roles.identifiant field'
 ALTER TABLE utilisateurs.t_roles DROP CONSTRAINT IF EXISTS unique_identifiant;
-ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_identifiant UNIQUE (identifiant)
+ALTER TABLE utilisateurs.t_roles ADD CONSTRAINT unique_identifiant UNIQUE (identifiant) ;
 
 \echo '-------------------------------------------------------------------------------'
 \echo 'Changing default group names'
@@ -134,19 +134,19 @@ INSERT INTO utilisateurs.cor_role_app_profil (
     id_application,
     id_profil
 ) VALUES (
-    utilisateurs.get_id_groupe_by_name('Administrateur'),
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     (SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
     (SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Administrateur')
 ), (
-    utilisateurs.get_id_groupe_by_name('Validateurs'),
+    utilisateurs.get_id_group_by_name('Validateurs'),
     (SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
     (SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 ), (
-    utilisateurs.get_id_groupe_by_name('Partenaires'),
+    utilisateurs.get_id_group_by_name('Partenaires'),
     (SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
     (SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 ), (
-    utilisateurs.get_id_groupe_by_name('Datamanagers'),
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     (SELECT id_application FROM utilisateurs.t_applications WHERE code_application = 'GN'),
     (SELECT id_profil FROM utilisateurs.t_profils WHERE nom_profil = 'Lecteur')
 )
@@ -161,577 +161,577 @@ INSERT INTO gn_permissions.t_permissions (
     id_object,
     scope_value
 ) VALUES (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     2
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     2
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     2
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     2
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+    utilisateurs.get_id_group_by_name('Agents'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MOBILE_APPS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('PERMISSIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('PERMISSIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MOBILE_APPS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MODULES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('PERMISSIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MODULES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MOBILE_APPS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MODULES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('PERMISSIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MOBILE_APPS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('PERMISSIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('MOBILE_APPS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+    utilisateurs.get_id_group_by_name('Administrateurs'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('VALIDATION'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('SYNTHESE'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCTAX'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('OCCHAB'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+    utilisateurs.get_id_group_by_name('Partenaires'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('VALIDATION'),
     gn_permissions.get_id_object('ALL'),
     1
 ), (
-    utilisateurs.get_id_role_by_uuid('dd04b9c2-eb93-47b4-80f5-df280b019c9c'), -- Validateurs
+    utilisateurs.get_id_group_by_name('Validateurs'), -- Validateurs
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('VALIDATION'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOTIFICATIONS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('NOMENCLATURES'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('ADMIN'),
     gn_permissions.get_id_object('ADDITIONAL_FIELDS'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('C'), -- Créer (C)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('R'), -- Lire (R)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('U'), -- Mettre à jour (U)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('E'), -- Exporter (E)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
     NULL
 ), (
-    utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+    utilisateurs.get_id_group_by_name('Datamanagers'),
     gn_permissions.get_id_action_by_code('D'), -- Supprimer (D)
     gn_commons.get_id_module_bycode('METADATA'),
     gn_permissions.get_id_object('ALL'),
@@ -752,7 +752,7 @@ INSERT INTO utilisateurs.cor_roles (
     id_role_utilisateur
 )
     SELECT
-        utilisateurs.get_id_role_by_uuid('5f2c4853-71b0-4b4f-9b23-61f428b06df4'), -- Administrateurs
+        utilisateurs.get_id_group_by_name('Administrateurs'),
         id_role
     FROM utilisateurs.t_roles
     WHERE email IN (
@@ -769,7 +769,7 @@ INSERT INTO utilisateurs.cor_roles (
     id_role_utilisateur
 )
     SELECT
-        utilisateurs.get_id_role_by_uuid('b544d3fe-090a-43e2-8517-85b1c00338ba'), -- Agents
+        utilisateurs.get_id_group_by_name('Agents'),
         id_role
     FROM utilisateurs.t_roles
     WHERE identifiant IS NOT NULL
@@ -784,7 +784,7 @@ INSERT INTO utilisateurs.cor_roles (
     id_role_utilisateur
 )
     SELECT
-        utilisateurs.get_id_role_by_uuid('dd04b9c2-eb93-47b4-80f5-df280b019c9c'), -- Validateurs
+        utilisateurs.get_id_group_by_name('Validateurs'), -- Validateurs
         id_role
     FROM utilisateurs.t_roles
     WHERE email IN (
@@ -809,7 +809,7 @@ INSERT INTO utilisateurs.cor_roles (
     id_role_utilisateur
 )
     SELECT
-        utilisateurs.get_id_role_by_uuid('b259e9a6-136e-4bf9-a0d7-ada2dde7642c'), -- Datamanagers
+        utilisateurs.get_id_group_by_name('Datamanagers'),
         id_role
     FROM utilisateurs.t_roles
     WHERE email IN (
@@ -828,7 +828,7 @@ INSERT INTO utilisateurs.cor_roles (
     id_role_utilisateur
 )
     SELECT
-        utilisateurs.get_id_role_by_uuid('cceb3beb-1891-42e9-b01e-ef7a59ad461a'), -- Partenaires
+        utilisateurs.get_id_group_by_name('Partenaires'),
         id_role
     FROM utilisateurs.t_roles
     WHERE email IS NOT NULL
