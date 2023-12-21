@@ -158,23 +158,24 @@ WHERE u.id_groupe = 1
 -- Requête export_synthese_initialisation
 COPY (
     WITH evee AS (
-        SELECT rt.cd_ref
-        FROM referentiels.reglementation_taxon rt
-        WHERE rt.id_reglementation::text = ANY (ARRAY['EVEE_EME'::character varying, 'EVEE_MAJ'::character varying, 'EVEE_MOD'::character varying]::text[])
-        GROUP BY rt.cd_ref
+        SELECT cd_ref
+        FROM referentiels.reglementation_taxon
+        WHERE id_reglementation::text = ANY (ARRAY['EVEE_EME', 'EVEE_MAJ', 'EVEE_MOD'])
+        GROUP BY cd_ref
     ),
     sensi_reg AS (
-        SELECT rt.cd_ref
-        FROM referentiels.reglementation_taxon rt
-        WHERE rt.id_reglementation::text = 'SENSI_PACA'::TEXT OR rt.id_reglementation::TEXT = 'SENSI_AURA'::TEXT
-        GROUP BY rt.cd_ref
+        SELECT cd_ref
+        FROM referentiels.reglementation_taxon
+        WHERE id_reglementation::varchar = 'SENSI_PACA'
+            OR id_reglementation::varchar = 'SENSI_AURA'
+        GROUP BY cd_ref
     ),
     sensi_dep AS (
-        SELECT rt.cd_ref,
-            "right"(rt.id_reglementation::text, 2) AS dept
-        FROM referentiels.reglementation_taxon rt
-        WHERE rt.id_reglementation ILIKE '%SENSI_AURA_%'
-        GROUP BY rt.cd_ref, ("right"(rt.id_reglementation::text, 2))
+        SELECT cd_ref,
+            "right"(id_reglementation::text, 2) AS dept
+        FROM referentiels.reglementation_taxon
+        WHERE id_reglementation ILIKE '%SENSI_AURA_%'
+        GROUP BY cd_ref, ("right"(id_reglementation::text, 2))
     ),
     duplicate_jdd_shortnames AS (
         SELECT lib_jdd_court AS shortname
@@ -185,8 +186,8 @@ COPY (
     SELECT DISTINCT ON (unique_id_sinp)
         o.id_observation_sinp AS unique_id_sinp,
         r.id_releve_sinp AS unique_id_sinp_grp,
-        o.id_observation::varchar(25) AS source_id,
-        r.id_releve::varchar(25) AS source_id_grp,
+        o.id_observation::varchar AS source_id,
+        r.id_releve::varchar AS source_id_grp,
         CASE
             WHEN r.id_org_f = 2785 THEN 'flora_cbna' -- 2785 : CBNA organisme
             WHEN r.meta_id_groupe = 1 -- 1 : CBNA groupe
@@ -199,9 +200,9 @@ COPY (
                     THEN ovf.nom
             ELSE NULL
         END AS code_source,
-        COALESCE(
+        coalesce(
             (
-                SELECT CONCAT(jdd.lib_jdd_court, ' - ', jdd.id_jdd)
+                SELECT concat(jdd.lib_jdd_court, ' - ', jdd.id_jdd)
                 FROM referentiels.metadata_jdd AS jdd
                 WHERE jdd.id_jdd = mj.id_jdd
                     AND mj.lib_jdd_court IN (SELECT shortname FROM duplicate_jdd_shortnames)
@@ -209,93 +210,97 @@ COPY (
             mj.lib_jdd_court
         ) AS code_dataset,
         CASE
-            WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
+            WHEN r.id_precision = 'P' -- P : Pointage précis
                 OR r.id_releve_methode = 10
-                    THEN 'St'::TEXT -- St : Stationnel
-            WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'C'::bpchar])
-                THEN 'In'::TEXT -- In : Inventoriel
-            ELSE 'NSP'::text
+                    THEN 'St' -- St : Stationnel
+            WHEN r.id_precision = ANY (ARRAY['T', 'C'])
+                THEN 'In' -- In : Inventoriel
+            ELSE 'NSP'
         END AS code_nomenclature_geo_object_nature,
-        'REL'::text AS code_nomenclature_grp_typ,
+        'REL' AS code_nomenclature_grp_typ,
         rm.lib AS grp_method,
-        '0'::text AS code_nomenclature_obs_technique, -- 0 : Vu
-        '1'::text AS code_nomenclature_bio_status, -- 1 : Non renseigné
-        '2'::text AS code_nomenclature_bio_condition, -- 2 : vivant
+        '0' AS code_nomenclature_obs_technique, -- 0 : Vu
+        '1' AS code_nomenclature_bio_status, -- 1 : Non renseigné
+        '2' AS code_nomenclature_bio_condition, -- 2 : vivant
         CASE
-            WHEN o.id_deg_nat = ANY (ARRAY[1, 2, 3]) THEN '5'::TEXT -- 5 : Subspontané
-            WHEN o.id_deg_nat = 4 THEN '3'::TEXT  -- 3 : Planté
-            WHEN o.id_deg_nat = 5 THEN '0'::TEXT  -- 0 : Inconnu
-            WHEN o.id_deg_nat IS NULL THEN '1'::TEXT --1 : Sauvage
+            WHEN o.id_deg_nat = ANY (ARRAY[1, 2, 3]) THEN '5' -- 5 : Subspontané
+            WHEN o.id_deg_nat = 4 THEN '3'  -- 3 : Planté
+            WHEN o.id_deg_nat = 5 THEN '0'  -- 0 : Inconnu
+            WHEN o.id_deg_nat IS NULL THEN '1' --1 : Sauvage
             ELSE NULL
         END AS code_nomenclature_naturalness,
         CASE
-            WHEN o.id_herbier1 > 0 THEN '1'::TEXT -- 1 : Oui
-            ELSE '2'::TEXT -- 2 : Non
+            WHEN o.id_herbier1 > 0 THEN '1' -- 1 : Oui
+            ELSE '2' -- 2 : Non
         END AS code_nomenclature_exist_proof,
-        o.valid_reg::varchar(25) AS code_nomenclature_valid_status, -- 1: certain, 2: probable, 3: douteux, 4: invalide, 5:non validable, null: dans l'espace de saisie, 0: dans l'espace de validation
         CASE
-            WHEN r.sinp_dspublique::text = ANY (ARRAY['Pu'::character varying, 'Re'::character varying, 'Ac'::character varying]::text[]) --PU: Publique, Re: Publique Régie, Ac: Publique acquise
-                THEN 5 -- diffusion telle quelle
-            ELSE COALESCE(r.sinp_difnivprec::integer, 0) -- diffusion standard
-        END::varchar(25) AS code_nomenclature_diffusion_level,
-        '0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
+            WHEN o.valid_reg IS NOT NULL
+                THEN o.valid_reg::varchar
+            ELSE  '0' -- 1: certain, 2: probable, 3: douteux, 4: invalide, 5:non validable, null: dans l'espace de saisie, 0: dans l'espace de validation
+        END AS code_nomenclature_valid_status,
         CASE
-            WHEN o.sexe = 'M'::bpchar THEN '3'::TEXT -- 3 : Mâle
-            WHEN o.sexe = 'F'::bpchar THEN '2'::TEXT -- 2 : Femelle
-            WHEN o.sexe = 'H'::bpchar THEN '4'::TEXT -- 4 : Hermaphrodite
-            ELSE '6'::TEXT -- 6 : Non renseigné
+            WHEN r.sinp_dspublique::varchar = ANY (ARRAY['Pu', 'Re', 'Ac']) --PU: Publique, Re: Publique Régie, Ac: Publique acquise
+                THEN '5' -- diffusion telle quelle
+            ELSE coalesce(r.sinp_difnivprec::varchar, '0') -- diffusion standard
+        END AS code_nomenclature_diffusion_level,
+        '0' AS code_nomenclature_life_stage, -- 0 : Inconnu
+        CASE
+            WHEN o.sexe = 'M' THEN '3' -- 3 : Mâle
+            WHEN o.sexe = 'F' THEN '2' -- 2 : Femelle
+            WHEN o.sexe = 'H' THEN '4' -- 4 : Hermaphrodite
+            ELSE '6' -- 6 : Non renseigné
         END AS code_nomenclature_sex,
-        'NSP'::text AS code_nomenclature_obj_count,
-        'NSP'::text AS code_nomenclature_type_count,
+        'NSP' AS code_nomenclature_obj_count,
+        'NSP' AS code_nomenclature_type_count,
         CASE
-            WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN 1 -- Département, maille, espace, commune, ZNIEFF
-            ELSE 0 -- Précision maximale telle que saisie(non sensible)
-        END::varchar(25) AS code_nomenclature_sensitivity,
-        'Pr'::text AS code_nomenclature_observation_status, -- Pr : Présent
+            WHEN COALESCE(se.cd_ref, sed.cd_ref) IS NOT NULL THEN '1' -- Département, maille, espace, commune, ZNIEFF
+            ELSE '0' -- Précision maximale telle que saisie(non sensible)
+        END AS code_nomenclature_sensitivity,
+        'Pr' AS code_nomenclature_observation_status, -- Pr : Présent
         NULL AS code_nomenclature_blurring,
         CASE
-            WHEN r.id_releve_type::text = 'BIB'::text
-                OR r.id_releve_type::text = 'NM'::text
+            WHEN r.id_releve_type = 'BIB'
+                OR r.id_releve_type = 'NM'
                     AND r.id_biblio IS NOT NULL
-                        THEN 'Li'::TEXT -- Li : Littérature
-            WHEN (r.id_releve_type::text = ANY (ARRAY['RT'::character varying, 'COM'::character varying]::text[]))
-                OR r.id_releve_type::text = 'NM'::text
+                        THEN 'Li' -- Li : Littérature
+            WHEN (r.id_releve_type = ANY (ARRAY['RT', 'COM']))
+                OR r.id_releve_type = 'NM'
                     AND r.id_biblio IS NULL
-                        THEN 'Te'::TEXT -- Te : Terrain
-            WHEN r.id_releve_type::text = 'HB'::text
-                THEN 'Co'::TEXT -- Co : Collection
-            WHEN r.id_releve_type::text = 'I'::text
-                THEN 'NSP'::text
+                        THEN 'Te' -- Te : Terrain
+            WHEN r.id_releve_type = 'HB'
+                THEN 'Co' -- Co : Collection
+            WHEN r.id_releve_type = 'I'
+                THEN 'NSP'
             ELSE NULL
         END AS code_nomenclature_source_status,
         CASE
-            WHEN r.id_precision = ANY (ARRAY['P'::bpchar, 'T'::bpchar, 'A'::bpchar])
-                THEN '1'::TEXT -- 1 : Géoréférencement
+            WHEN r.id_precision = ANY (ARRAY['P', 'T', 'A'])
+                THEN '1' -- 1 : Géoréférencement
             WHEN r.id_precision = 'C'
                 AND r.insee_comm IS NOT NULL
                 AND r.insee_dept IS NOT NULL
-                    THEN '2'::TEXT -- 2 : Rattachement
+                    THEN '2' -- 2 : Rattachement
             ELSE NULL
         END AS code_nomenclature_info_geo_type,
-        '0'::text AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
+        '0' AS code_nomenclature_behaviour, -- 0 : Inconnu, le statut biologie de l'individu n'est pas connu
         CASE cd.id_indigenat
-            WHEN 1 THEN '2'::TEXT -- 2 : Présent, 1 : indigène
-            WHEN 2 THEN '0'::TEXT -- 0 : Inconnu, 2 : indigène ?
-            WHEN 3 THEN '2'::TEXT -- 2 : Présent, 3 : archéophyte
+            WHEN 1 THEN '2' -- 2 : Présent, 1 : indigène
+            WHEN 2 THEN '0' -- 0 : Inconnu, 2 : indigène ?
+            WHEN 3 THEN '2' -- 2 : Présent, 3 : archéophyte
             WHEN 4 THEN -- 4 : exogène
                 CASE
-                    WHEN e.cd_ref IS NOT NULL THEN '4'::TEXT -- 4 : Introduit envahissant
-                    ELSE '3'::TEXT -- 3 : Introduit
+                    WHEN e.cd_ref IS NOT NULL THEN '4' -- 4 : Introduit envahissant
+                    ELSE '3' -- 3 : Introduit
                 END
-            ELSE '1'::TEXT -- 1 : Non renseigné
+            ELSE '1' -- 1 : Non renseigné
         END AS code_nomenclature_biogeo_status,
         CASE
             WHEN r.id_biblio IS NOT NULL
                 THEN concat(b.auteurs, ', ', b.annee, '. ', b.titre)
             ELSE NULL
         END AS reference_biblio,
-        COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
-        COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
+        coalesce(o.nombre_pieds::integer, np.nb_min) AS count_min,
+        coalesce(o.nombre_pieds::integer, np.nb_max) AS count_max,
         CASE
             WHEN o.cd_ref < 15
                 THEN o.cd_ref + 30000000
@@ -304,34 +309,32 @@ COPY (
         NULL AS cd_hab,
         CASE
             WHEN o.nom_taxon IS NOT NULL
-                THEN o.nom_taxon::varchar(1000)
+                THEN o.nom_taxon
             ELSE ''
         END AS nom_cite,
         NULL AS digital_proof,
         NULL AS non_digital_proof,
-        LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
-        GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
+        least(nullif(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
+        greatest(nullif(r.alti_sup, 0), r.alti_calc) AS altitude_max,
         NULL AS depth_min,
         NULL AS depth_max,
-        concat(public.delete_space(r.lieudit), public.delete_space(r.comm_loc))::varchar(500) AS place_name,
+        concat(public.delete_space(r.lieudit), public.delete_space(r.comm_loc)) AS place_name,
         st_geomfromewkt(
             CASE
-                WHEN r.id_precision = 'P'::bpchar -- P : Pointage précis
-                    THEN st_asewkt(COALESCE(st_transform(r.geom_pres_4326, 2154), r.geom_2154))
-                WHEN r.id_precision = ANY (ARRAY['T'::bpchar, 'A'::bpchar, 'C'::bpchar]) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
-                    THEN st_asewkt(COALESCE(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
+                WHEN r.id_precision = 'P' -- P : Pointage précis
+                    THEN st_asewkt(coalesce(st_transform(r.geom_pres_4326, 2154), r.geom_2154))
+                WHEN r.id_precision = ANY (ARRAY['T', 'A', 'C']) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
+                    THEN st_asewkt(coalesce(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
                 ELSE NULL
             END
-        )
-        AS geom,
-        COALESCE(r.resolution,
+        ) AS geom,
+        coalesce(r.resolution,
             CASE r.id_precision
-                WHEN 'P'::bpchar THEN 10
-                WHEN 'T'::bpchar THEN 800
+                WHEN 'P' THEN 10
+                WHEN 'T' THEN 800
                 ELSE NULL
             END
-        )
-        AS "precision",
+        ) AS "precision",
         CASE
             WHEN r.id_precision = 'C' AND char_length(r.insee_comm) = 5
                 THEN concat('COM.', r.insee_comm)
@@ -344,39 +347,58 @@ COPY (
         r.date_releve_deb::timestamp AS date_min,
         r.date_releve_fin::timestamp AS date_max,
         CASE
-            WHEN o.meta_type_valid::text = 'a_v1'::text -- a_v1 : automatiquement
-                THEN NULL
-            ELSE concat(concat_ws(' '::text, val.nom, val.prenom),
-                ' (', COALESCE(ov.abb,
+            WHEN o.meta_type_valid = 'a_v1' -- a_v1 : automatiquement
+                THEN '-- AUTO --'
+            ELSE
                 CASE
-                    WHEN ca.last_name IS NOT NULL
-                        THEN 'CBNA'
-                    ELSE ov.nom
-                END
-                , 'Inconnu'::character varying), ')'
-                )
+                    WHEN o.meta_id_user_valid IS NOT NULL
+                        THEN concat(
+                            val.nom, ' ', val.prenom,
+                            CASE
+                                WHEN val.email IS NOT NULL AND val.email != ''
+                                    THEN concat(' <', val.email, '>')
+                                ELSE ''
+                            END,
+                            ' (',
+                            CASE
+                                WHEN val.id_org IS NOT NULL
+                                    THEN (SELECT coalesce(nullif(orgv.abb, ''), orgv.nom)
+                                        FROM referentiels.organisme AS orgv
+                                        WHERE val.id_org = orgv.id_org)
+                                ELSE 'Inconnu'
+                            END,
+                            ') ',
+                            concat('[', val.permid, ']')
+                        )
+                    ELSE NULL
+               END
         END AS "validator",
-        NULL AS validation_comment,
-            COALESCE(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
-        flore.generate_observers(r.id_releve, ', '::character varying) AS observers,
+        concat_ws(
+            '\n',
+            nullif(trim(o.comm_validation), ''),
+            nullif(trim(val.comm_analyse), '')
+        ) AS validation_comment,
+        coalesce(o.meta_date_valid, val.date_prevalid, o.meta_date_maj)::timestamp AS validation_date,
+        flore.generate_observers(r.id_releve, ', ') AS observers,
         concat(
             CASE
                 WHEN o.id_det IS NOT NULL
-                    THEN concat(upper(det.nom),' ', COALESCE (det.prenom, ''))
+                    THEN concat(upper(det.nom), ' ', coalesce(det.prenom, ''))
                 ELSE 'INCONNU'
             END
-        )
-        AS determiner,
+        ) AS determiner,
         NULL AS determination_date,
-        dig.permid::varchar(50) AS code_digitiser,
-        1::varchar(25) AS code_nomenclature_determination_method,
+        dig.permid::varchar AS code_digitiser,
+        '1' AS code_nomenclature_determination_method,
         public.delete_space(r.comm_date) AS comment_context,
         NULL AS comment_description,
         jsonb_strip_nulls(
             CASE
                 WHEN r.id_org_f IS NOT NULL
-                    THEN jsonb_build_object('fournisseur',
-                            jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
+                    THEN jsonb_build_object(
+                        'fournisseur',
+                        jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom)
+                    )
                 ELSE jsonb_build_object('fournisseur', null)
             END ||
             public.build_simple_json_object('idObs1', r.id_obs1) ||
@@ -390,8 +412,13 @@ COPY (
             public.build_simple_json_object('inseeReg', r.insee_reg) ||
             CASE
                 WHEN h.nom != ''
-                    THEN jsonb_build_object('herbier',
-                            jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
+                    THEN jsonb_build_object(
+                        'herbier', jsonb_build_object(
+                                'nomHerbier', h.nom,
+                                'partHerbier', o.part_herbier1,
+                                'idHerbier', o.id_herbier1
+                            )
+                        )
                 ELSE jsonb_build_object('herbier', null)
             END ||
             public.build_simple_json_object('codePerso', r.code_perso) ||
@@ -404,11 +431,11 @@ COPY (
             public.build_simple_json_object('metaIdUserSaisie', r.meta_id_user_saisie) ||
             public.build_simple_json_object('sinpDspublique', r.sinp_dspublique) ||
             CASE t.tax_type
-                WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
-                WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT
-                WHEN 'L'::bpchar THEN '{"taxTypeLabel": "Lichens"}'::text
-                WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
-                WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT
+                WHEN 'P' THEN '{"taxTypeLabel": "Plantes vasculaires"}'
+                WHEN 'B' THEN '{"taxTypeLabel": "Bryophytes"}'
+                WHEN 'L' THEN '{"taxTypeLabel": "Lichens"}'
+                WHEN 'C' THEN '{"taxTypeLabel": "Champignons"}'
+                WHEN 'A' THEN '{"taxTypeLabel": "Algues"}'
                 ELSE '{"taxType": null}'
             END::jsonb||
             jsonb_build_object('cd_nom', o.cd_nom) ||
@@ -420,39 +447,61 @@ COPY (
                     OR r.meta_id_user_saisie = 4
                     OR r.meta_id_user_saisie = 40
                     OR r.meta_id_user_saisie = 48
-                        THEN jsonb_build_object('digitisers', json_build_object(
-                            'nom', dig.nom,
-                            'prénom', dig.prenom,
-                            'email', dig.email,
-                            'org', dig.id_org
-                            ))
+                        THEN jsonb_build_object(
+                            'digitisers', json_build_object(
+                                'nom', dig.nom,
+                                'prénom', dig.prenom,
+                                'email', dig.email,
+                                'org', dig.id_org
+                            )
+                        )
                 ELSE jsonb_build_object ('digitisers', null)
             END
-        )
-        AS additional_data,
+        ) AS additional_data,
         r.meta_date_saisie::timestamp AS meta_create_date,
-        GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
+        greatest(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
         'I' AS meta_last_action
-    FROM flore.releve r
-        JOIN flore.observation o ON r.id_releve = o.id_releve
-        JOIN referentiels.metadata_jdd mj ON r.id_jdd = mj.id_jdd
-        LEFT JOIN referentiels.releve_methode rm ON r.id_releve_methode = rm.id_releve_methode
-        LEFT JOIN referentiels.biblio b ON r.id_biblio = b.id_biblio
-        LEFT JOIN referentiels.nombre_pieds np ON o.id_nombre_pieds = np.id_nombre_pieds
-        LEFT JOIN referentiels.observateur det ON det.id_obs = o.id_det
-        LEFT JOIN applications.utilisateur val ON val.id_user = o.meta_id_user_valid
-        LEFT JOIN flore.cbna_agent ca ON ca.uuid = val.permid
-        LEFT JOIN applications.utilisateur dig ON dig.id_user = r.meta_id_user_saisie
-        LEFT JOIN referentiels.organisme ov ON val.id_org = ov.id_org AND det.meta_id_groupe = ov.meta_id_groupe
-        LEFT JOIN referentiels.organisme ovf ON r.id_org_f = ovf.id_org
-        LEFT JOIN referentiels.catalog_dept cd ON cd.insee_dept = r.insee_dept AND cd.cd_ref = o.cd_ref
-        LEFT JOIN referentiels.commune c ON r.insee_comm = c.insee_comm
-        LEFT JOIN referentiels.taxref t ON o.cd_nom = t.cd_nom
-        LEFT JOIN referentiels.programme p ON r.meta_id_prog = p.id_prog
-        LEFT JOIN referentiels.herbier h ON o.id_herbier1 = h.id_herbier
-        LEFT JOIN evee e ON e.cd_ref = o.cd_ref
-        LEFT JOIN sensi_reg se ON se.cd_ref = o.cd_ref
-        LEFT JOIN sensi_dep sed ON sed.cd_ref = o.cd_ref AND sed.dept = r.insee_dept::TEXT AND sed.dept IN ('01', '26', '38', '73', '74')
+    FROM flore.releve AS r
+        JOIN flore.observation AS o
+            ON r.id_releve = o.id_releve
+        JOIN referentiels.metadata_jdd AS mj
+            ON r.id_jdd = mj.id_jdd
+        LEFT JOIN referentiels.releve_methode AS rm
+            ON r.id_releve_methode = rm.id_releve_methode
+        LEFT JOIN referentiels.biblio AS b
+            ON r.id_biblio = b.id_biblio
+        LEFT JOIN referentiels.nombre_pieds AS np
+            ON o.id_nombre_pieds = np.id_nombre_pieds
+        LEFT JOIN referentiels.observateur AS det
+            ON det.id_obs = o.id_det
+        LEFT JOIN applications.utilisateur AS val
+            ON val.id_user = o.meta_id_user_valid
+        LEFT JOIN flore.cbna_agent AS ca
+            ON ca.uuid = val.permid
+        LEFT JOIN applications.utilisateur AS dig
+            ON dig.id_user = r.meta_id_user_saisie
+        LEFT JOIN referentiels.organisme AS ov
+            ON val.id_org = ov.id_org AND det.meta_id_groupe = ov.meta_id_groupe
+        LEFT JOIN referentiels.organisme AS ovf
+            ON r.id_org_f = ovf.id_org
+        LEFT JOIN referentiels.catalog_dept AS cd
+            ON cd.insee_dept = r.insee_dept AND cd.cd_ref = o.cd_ref
+        LEFT JOIN referentiels.commune AS c
+            ON r.insee_comm = c.insee_comm
+        LEFT JOIN referentiels.taxref AS t
+            ON o.cd_nom = t.cd_nom
+        LEFT JOIN referentiels.programme AS p
+            ON r.meta_id_prog = p.id_prog
+        LEFT JOIN referentiels.herbier AS h
+            ON o.id_herbier1 = h.id_herbier
+        LEFT JOIN evee AS e
+            ON e.cd_ref = o.cd_ref
+        LEFT JOIN sensi_reg AS se
+            ON se.cd_ref = o.cd_ref
+        LEFT JOIN sensi_dep AS sed
+            ON sed.cd_ref = o.cd_ref AND sed.dept = r.insee_dept::varchar AND sed.dept IN ('01', '26', '38', '73', '74')
+        LEFT JOIN flora.validation AS val
+            ON val.id_observation = o.id_observation
     WHERE (
         r.meta_id_groupe = 1
         OR  (
