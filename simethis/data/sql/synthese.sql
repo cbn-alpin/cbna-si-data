@@ -401,12 +401,6 @@ COPY (
                     )
                 ELSE jsonb_build_object('fournisseur', null)
             END ||
-            public.build_simple_json_object('idObs1', r.id_obs1) ||
-            public.build_simple_json_object('idObs2', r.id_obs2) ||
-            public.build_simple_json_object('idObs3', r.id_obs3) ||
-            public.build_simple_json_object('idObs4', r.id_obs4) ||
-            public.build_simple_json_object('idObs5', r.id_obs5) ||
-            public.build_simple_json_object('commune', c.nom_min) ||
             public.build_simple_json_object('metaIdGroupe', r.meta_id_groupe) ||
             public.build_simple_json_object('metaIdProg', r.meta_id_prog) ||
             public.build_simple_json_object('inseeReg', r.insee_reg) ||
@@ -440,13 +434,7 @@ COPY (
             END::jsonb||
             jsonb_build_object('cd_nom', o.cd_nom) ||
             CASE
-                WHEN r.meta_id_user_saisie = 21
-                    OR r.meta_id_user_saisie = 47
-                    OR r.meta_id_user_saisie = 394
-                    OR r.meta_id_user_saisie = 75
-                    OR r.meta_id_user_saisie = 4
-                    OR r.meta_id_user_saisie = 40
-                    OR r.meta_id_user_saisie = 48
+                WHEN r.meta_id_user_saisie IN (21, 47, 394, 75, 4, 40,48)
                         THEN jsonb_build_object(
                             'digitisers', json_build_object(
                                 'nom', dig.nom,
