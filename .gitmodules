@@ -2,5 +2,5 @@
 	path = import-parser
 	url = git@github.com:cbn-alpin/geonature-import-parser.git
 [submodule "sinp-shared-data"]
-	path = sinp-shared-data
+	path = shared
 	url = git@github.com:cbn-alpin/sinp-shared-data.git
