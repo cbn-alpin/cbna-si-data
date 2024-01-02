@@ -1,162 +1,162 @@
---CREATE OR REPLACE FUNCTION flore.generate_observers(id_releve integer, sep character varying DEFAULT ' '::character varying)
---    RETURNS text
---    LANGUAGE plpgsql
---    SECURITY DEFINER
---    AS $function$
---DECLARE
---    generate_observers text;
---BEGIN
---    generate_observers := concat_ws($2,
---        CASE
---            WHEN rel.id_obs1 IS NOT NULL --obs1
---                THEN concat(obs1.nom,' ', obs1.prenom,
---                    CASE
---                        WHEN obs1.email IS NOT NULL AND obs1.email != '' --si email obs1
---                            THEN concat(' <', obs1.email,'>') --email obs1
---                        ELSE ''
---                    END,
---                    ' (',
---                    CASE
---                        WHEN id_org_obs1 IS NOT NULL --si org1
---                            THEN (SELECT coalesce( NULLIF(org1.abb,'') ,org1.nom) --org_obs1
---                                FROM referentiels.organisme org1
---                                WHERE rel.id_org_obs1 = org1.id_org )
---                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
---                    END,')',
---                    concat(' [', flore.check_cbna_agent(rel.id_obs1, rel.date_releve_deb), ']') -- uuid obs1
---                )
---            ELSE NULL
---        END,
---        CASE
---            WHEN rel.id_obs2 IS NOT NULL --obs2
---                THEN concat(obs2.nom,' ', obs2.prenom,
---                    CASE
---                        WHEN obs2.email IS NOT NULL AND obs2.email != '' --si email obs2
---                            THEN concat(' <', obs2.email,'>') --email obs2
---                        ELSE ''
---                    END,
---                    ' (',
---                    CASE
---                        WHEN id_org_obs2 IS NOT NULL --si org2
---                            THEN (SELECT coalesce( NULLIF(org2.abb,'') ,org2.nom) --org_obs2
---                                FROM referentiels.organisme org2
---                                WHERE rel.id_org_obs2 = org2.id_org )
---                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
---                    END,')',
---                    concat(' [', flore.check_cbna_agent(rel.id_obs2, rel.date_releve_deb), ']') -- uuid obs2
---                )
---            ELSE NULL
---        END,
---        CASE
---            WHEN rel.id_obs3 IS NOT NULL --obs3
---                THEN concat(obs3.nom,' ', obs3.prenom,
---                    CASE
---                        WHEN obs3.email IS NOT NULL AND obs3.email != '' --si email obs3
---                            THEN concat(' <', obs3.email,'>') --email obs3
---                        ELSE ''
---                    END,
---                    ' (',
---                    CASE
---                        WHEN id_org_obs3 IS NOT NULL --si org3
---                            THEN (SELECT coalesce( NULLIF(org3.abb,'') ,org3.nom) --org_obs3
---                                FROM referentiels.organisme org3
---                                WHERE rel.id_org_obs3 = org3.id_org )
---                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
---                    END,')',
---                    concat(' [', flore.check_cbna_agent(rel.id_obs3, rel.date_releve_deb), ']') -- uuid obs3
---                )
---            ELSE NULL
---        END,
---        CASE
---            WHEN rel.id_obs4 IS NOT NULL --obs4
---                THEN concat(obs4.nom,' ', obs4.prenom,
---                    CASE
---                        WHEN obs4.email IS NOT NULL AND obs4.email != '' --si email obs4
---                            THEN concat(' <', obs4.email,'>') --email obs4
---                        ELSE ''
---                    END,
---                    ' (',
---                    CASE
---                        WHEN id_org_obs4 IS NOT NULL --si org4
---                            THEN (SELECT coalesce( NULLIF(org4.abb,'') ,org4.nom) --org_obs4
---                                FROM referentiels.organisme org4
---                                WHERE rel.id_org_obs4 = org4.id_org )
---                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
---                    END,')',
---                    concat(' [', flore.check_cbna_agent(rel.id_obs4, rel.date_releve_deb), ']') -- uuid obs4
---                )
---            ELSE NULL
---        END,
---        CASE
---            WHEN rel.id_obs5 IS NOT NULL --obs5
---                THEN concat(obs5.nom,' ', obs5.prenom,
---                    CASE
---                        WHEN obs5.email IS NOT NULL AND obs5.email != '' --si email obs5
---                            THEN concat(' <', obs5.email,'>') --email obs5
---                        ELSE ''
---                    END,
---                    ' (',
---                    CASE
---                        WHEN id_org_obs5 IS NOT NULL --si org5
---                            THEN (SELECT coalesce( NULLIF(org5.abb,'') ,org5.nom) --org_obs5
---                                FROM referentiels.organisme org5
---                                WHERE rel.id_org_obs5 = org5.id_org )
---                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
---                    END,')',
---                    concat(' [', flore.check_cbna_agent(rel.id_obs5, rel.date_releve_deb), ']') -- uuid obs5
---                )
---            ELSE NULL
---        END
---    )
---    FROM flore.releve AS rel
---        LEFT JOIN referentiels.observateur AS obs1
---            ON rel.id_obs1 = obs1.id_obs
---        LEFT JOIN referentiels.observateur AS obs2
---            ON rel.id_obs2 = obs2.id_obs
---        LEFT JOIN referentiels.observateur AS obs3
---            ON rel.id_obs3 = obs3.id_obs
---        LEFT JOIN referentiels.observateur AS obs4
---            ON rel.id_obs4 = obs4.id_obs
---        LEFT JOIN referentiels.observateur AS obs5
---            ON rel.id_obs5 = obs5.id_obs
---        LEFT JOIN referentiels.organisme AS orgf
---            ON rel.id_org_f = orgf.id_org
---    WHERE rel.id_releve = $1;
---
---    RETURN generate_observers;
---
---END;
---$function$ ;
---
---DROP TABLE IF EXISTS flore.cbna_agent;
+CREATE OR REPLACE FUNCTION flore.generate_observers(id_releve integer, sep character varying DEFAULT ' '::character varying)
+    RETURNS text
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    AS $function$
+DECLARE
+    generate_observers text;
+BEGIN
+    generate_observers := concat_ws($2,
+        CASE
+            WHEN rel.id_obs1 IS NOT NULL --obs1
+                THEN concat(obs1.nom,' ', obs1.prenom,
+                    CASE
+                        WHEN obs1.email IS NOT NULL AND obs1.email != '' --si email obs1
+                            THEN concat(' <', obs1.email,'>') --email obs1
+                        ELSE ''
+                    END,
+                    ' (',
+                    CASE
+                        WHEN id_org_obs1 IS NOT NULL --si org1
+                            THEN (SELECT coalesce( NULLIF(org1.abb,'') ,org1.nom) --org_obs1
+                                FROM referentiels.organisme org1
+                                WHERE rel.id_org_obs1 = org1.id_org )
+                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
+                    END,')',
+                    concat(' [', flore.check_cbna_agent(rel.id_obs1, rel.date_releve_deb), ']') -- uuid obs1
+                )
+            ELSE NULL
+        END,
+        CASE
+            WHEN rel.id_obs2 IS NOT NULL --obs2
+                THEN concat(obs2.nom,' ', obs2.prenom,
+                    CASE
+                        WHEN obs2.email IS NOT NULL AND obs2.email != '' --si email obs2
+                            THEN concat(' <', obs2.email,'>') --email obs2
+                        ELSE ''
+                    END,
+                    ' (',
+                    CASE
+                        WHEN id_org_obs2 IS NOT NULL --si org2
+                            THEN (SELECT coalesce( NULLIF(org2.abb,'') ,org2.nom) --org_obs2
+                                FROM referentiels.organisme org2
+                                WHERE rel.id_org_obs2 = org2.id_org )
+                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
+                    END,')',
+                    concat(' [', flore.check_cbna_agent(rel.id_obs2, rel.date_releve_deb), ']') -- uuid obs2
+                )
+            ELSE NULL
+        END,
+        CASE
+            WHEN rel.id_obs3 IS NOT NULL --obs3
+                THEN concat(obs3.nom,' ', obs3.prenom,
+                    CASE
+                        WHEN obs3.email IS NOT NULL AND obs3.email != '' --si email obs3
+                            THEN concat(' <', obs3.email,'>') --email obs3
+                        ELSE ''
+                    END,
+                    ' (',
+                    CASE
+                        WHEN id_org_obs3 IS NOT NULL --si org3
+                            THEN (SELECT coalesce( NULLIF(org3.abb,'') ,org3.nom) --org_obs3
+                                FROM referentiels.organisme org3
+                                WHERE rel.id_org_obs3 = org3.id_org )
+                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
+                    END,')',
+                    concat(' [', flore.check_cbna_agent(rel.id_obs3, rel.date_releve_deb), ']') -- uuid obs3
+                )
+            ELSE NULL
+        END,
+        CASE
+            WHEN rel.id_obs4 IS NOT NULL --obs4
+                THEN concat(obs4.nom,' ', obs4.prenom,
+                    CASE
+                        WHEN obs4.email IS NOT NULL AND obs4.email != '' --si email obs4
+                            THEN concat(' <', obs4.email,'>') --email obs4
+                        ELSE ''
+                    END,
+                    ' (',
+                    CASE
+                        WHEN id_org_obs4 IS NOT NULL --si org4
+                            THEN (SELECT coalesce( NULLIF(org4.abb,'') ,org4.nom) --org_obs4
+                                FROM referentiels.organisme org4
+                                WHERE rel.id_org_obs4 = org4.id_org )
+                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
+                    END,')',
+                    concat(' [', flore.check_cbna_agent(rel.id_obs4, rel.date_releve_deb), ']') -- uuid obs4
+                )
+            ELSE NULL
+        END,
+        CASE
+            WHEN rel.id_obs5 IS NOT NULL --obs5
+                THEN concat(obs5.nom,' ', obs5.prenom,
+                    CASE
+                        WHEN obs5.email IS NOT NULL AND obs5.email != '' --si email obs5
+                            THEN concat(' <', obs5.email,'>') --email obs5
+                        ELSE ''
+                    END,
+                    ' (',
+                    CASE
+                        WHEN id_org_obs5 IS NOT NULL --si org5
+                            THEN (SELECT coalesce( NULLIF(org5.abb,'') ,org5.nom) --org_obs5
+                                FROM referentiels.organisme org5
+                                WHERE rel.id_org_obs5 = org5.id_org )
+                        ELSE coalesce(NULLIF(orgf.abb,''),orgf.nom)
+                    END,')',
+                    concat(' [', flore.check_cbna_agent(rel.id_obs5, rel.date_releve_deb), ']') -- uuid obs5
+                )
+            ELSE NULL
+        END
+    )
+    FROM flore.releve AS rel
+        LEFT JOIN referentiels.observateur AS obs1
+            ON rel.id_obs1 = obs1.id_obs
+        LEFT JOIN referentiels.observateur AS obs2
+            ON rel.id_obs2 = obs2.id_obs
+        LEFT JOIN referentiels.observateur AS obs3
+            ON rel.id_obs3 = obs3.id_obs
+        LEFT JOIN referentiels.observateur AS obs4
+            ON rel.id_obs4 = obs4.id_obs
+        LEFT JOIN referentiels.observateur AS obs5
+            ON rel.id_obs5 = obs5.id_obs
+        LEFT JOIN referentiels.organisme AS orgf
+            ON rel.id_org_f = orgf.id_org
+    WHERE rel.id_releve = $1;
 
--- Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
---CREATE TABLE flore.cbna_agent (
---    gid SERIAL PRIMARY KEY,
---    uuid UUID,
---    last_name VARCHAR(100),
---    first_name VARCHAR(100),
---    entry_date DATE,
---    release_date DATE
---);
---
----- Insert datas from CSV file to table
---COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
---FROM :'cbnaAgentCsvFilePath'
---DELIMITER ','
---CSV HEADER;
---
----- Agent uuid recovery in the table
---UPDATE flore.cbna_agent AS ca
---SET uuid = u.permid
---FROM applications.utilisateur AS u
---WHERE u.id_groupe = 1
---    AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name))
---    AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name));
+    RETURN generate_observers;
+
+END;
+$function$ ;
+
+DROP TABLE IF EXISTS flore.cbna_agent;
+
+ Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
+CREATE TABLE flore.cbna_agent (
+    gid SERIAL PRIMARY KEY,
+    uuid UUID,
+    last_name VARCHAR(100),
+    first_name VARCHAR(100),
+    entry_date DATE,
+    release_date DATE
+);
+
+-- Insert datas from CSV file to table
+COPY flore.cbna_agent(last_name, first_name, entry_date, release_date)
+FROM :'cbnaAgentCsvFilePath'
+DELIMITER ','
+CSV HEADER;
+
+-- Agent uuid recovery in the table
+UPDATE flore.cbna_agent AS ca
+SET uuid = u.permid
+FROM applications.utilisateur AS u
+WHERE u.id_groupe = 1
+    AND lower(unaccent(u.nom)) = lower(unaccent(ca.last_name))
+    AND lower(unaccent(u.prenom)) = lower(unaccent(ca.first_name));
 
 
 -- Requête occtax
---COPY (
+COPY (
     SELECT DISTINCT ON (unique_id_sinp_grp)
 
     -- t_releves_occtax
@@ -171,12 +171,15 @@
         rm.lib AS grp_method,
         r.date_releve_deb::timestamp AS date_min,
         r.date_releve_fin::timestamp AS date_max,
+        NULL AS hour_min,
+        NULL AS hour_max,
         hr.cd_hab AS cd_hab,
         LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
         GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
         NULL AS depth_min,
         NULL AS depth_max,
         r.lieudit AS place_name,
+        NULL AS meta_device_entry,
         public.delete_space(r.comm_loc) AS comment_context,
         st_geomfromewkt(
             CASE
@@ -307,6 +310,7 @@
             ELSE ''
         END AS nom_cite,
         'Taxref v16.0' AS meta_v_taxref,
+        NULL AS sample_number_proof,
         NULL AS digital_proof,
         NULL AS non_digital_proof,
         public.delete_space(o.comm_taxon) AS comment_description,
@@ -346,6 +350,7 @@
         LEFT JOIN referentiels.habref hr ON hr.cd_hab = ee.cd_hab_eunis
     WHERE
         r.id_org_f = 2785 -- CBNA
---) TO '/tmp/occtax.csv'
---WITH(format csv, header, delimiter E'\t', null '\N');
+
+) TO '/tmp/occtax.csv'
+WITH(format csv, header, delimiter E'\t', null '\N');
 
