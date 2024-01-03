@@ -130,7 +130,7 @@ $function$ ;
 
 DROP TABLE IF EXISTS flore.cbna_agent;
 
- Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
+--Create table, drop at the end of the script, in order to list CBNA agents of the conservation and knowledge services of the CBNA
 CREATE TABLE flore.cbna_agent (
     gid SERIAL PRIMARY KEY,
     uuid UUID,
