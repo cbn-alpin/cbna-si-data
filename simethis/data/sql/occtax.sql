@@ -251,6 +251,9 @@ COPY (
                 ELSE jsonb_build_object ('digitisers', null)
             END
         ) AS additional_fields,
+        r.meta_date_saisie::timestamp AS meta_create_date,
+        GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
+        'I' AS meta_last_action
 
         -- t_occurences_occtax
 
@@ -330,7 +333,6 @@ COPY (
         COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
         COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
 
-        'I' AS meta_last_action
     FROM flore.releve r
         JOIN flore.observation o ON r.id_releve = o.id_releve
         JOIN referentiels.metadata_jdd mj ON r.id_jdd = mj.id_jdd
