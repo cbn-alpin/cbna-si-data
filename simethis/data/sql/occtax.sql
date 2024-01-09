@@ -253,10 +253,11 @@ COPY (
         ) AS additional_fields,
         r.meta_date_saisie::timestamp AS meta_create_date,
         GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
-        'I' AS meta_last_action
+        'I' AS meta_last_action,
 
         -- t_occurences_occtax
 
+        o.id_observation_sinp AS unique_id_occurrence_occtax,
         '2'::text AS code_nomenclature_bio_condition, -- 2 : vivant
         '1'::text AS code_nomenclature_bio_status, -- 1 : Non renseigné
         CASE
