@@ -165,7 +165,7 @@ COPY (
         mj.lib_jdd_court::varchar(255) AS code_dataset,
         dig.permid::varchar(50) AS code_digitiser,
         flore.generate_observers(r.id_releve, ', '::character varying) AS observers,
-        '0'::text AS code_nomenclature_obs_technique, -- 0 : Vu Observation directe d'un individu vivant.
+        '0'::text AS code_nomenclature_tech_collect_campanule, -- 0 : Vu Observation directe d'un individu vivant.
         -- Attention : MethodeObservation devient techniqueObservation renommé "Technique de collecte(Campanule) (2018)"
         'REL'::text AS code_nomenclature_grp_typ, -- Relevé (qu'il soit phytosociologique, d'observation, ou autre...)
         rm.lib AS grp_method,
