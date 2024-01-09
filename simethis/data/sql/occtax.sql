@@ -207,53 +207,6 @@ COPY (
             END
         )
         AS "precision",
-        jsonb_strip_nulls(
-            CASE
-                WHEN r.id_org_f IS NOT NULL
-                    THEN jsonb_build_object('fournisseur',
-                            jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
-                ELSE jsonb_build_object('fournisseur', null)
-            END ||
-            public.build_simple_json_object('metaIdGroupe', r.meta_id_groupe) ||
-            public.build_simple_json_object('metaIdProg', r.meta_id_prog) ||
-            public.build_simple_json_object('inseeReg', r.insee_reg) ||
-            CASE
-                WHEN h.nom != ''
-                    THEN jsonb_build_object('herbier',
-                            jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
-                ELSE jsonb_build_object('herbier', null)
-            END ||
-            public.build_simple_json_object('codePerso', r.code_perso) ||
-            public.build_simple_json_object('codeGps', r.code_gps) ||
-            CASE
-                WHEN r.meta_id_prog IS NOT NULL
-                    THEN jsonb_build_object('metaNomProg', p.nom)
-                ELSE '{"metaNomProg": null}'
-            END ||
-            public.build_simple_json_object('metaIdUserSaisie', r.meta_id_user_saisie) ||
-            public.build_simple_json_object('sinpDspublique', r.sinp_dspublique) ||
-            CASE t.tax_type
-                WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
-                WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT
-                WHEN 'L'::bpchar THEN '{"taxTypeLabel": "Lichens"}'::text
-                WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
-                WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT
-                ELSE '{"taxType": null}'
-            END::jsonb||
-            CASE
-	            	WHEN r.meta_id_user_saisie IN (21, 47, 394, 75, 4, 40,48)
-                        THEN jsonb_build_object('digitisers', json_build_object(
-                            'nom', dig.nom,
-                            'prénom', dig.prenom,
-                            'email', dig.email,
-                            'org', dig.id_org
-                            ))
-                ELSE jsonb_build_object ('digitisers', null)
-            END
-        ) AS additional_fields,
-        r.meta_date_saisie::timestamp AS meta_create_date,
-        GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
-        'I' AS meta_last_action,
 
         -- t_occurences_occtax
 
@@ -335,6 +288,54 @@ COPY (
         'NSP'::text AS code_nomenclature_type_count, -- La méthode de dénombrement n'est pas connue
         COALESCE(o.nombre_pieds::integer, np.nb_min) AS count_min,
         COALESCE(o.nombre_pieds::integer, np.nb_max) AS count_max,
+
+        jsonb_strip_nulls(
+            CASE
+                WHEN r.id_org_f IS NOT NULL
+                    THEN jsonb_build_object('fournisseur',
+                            jsonb_build_object('idOrgF', r.id_org_f, 'nomOrgF', ovf.nom))
+                ELSE jsonb_build_object('fournisseur', null)
+            END ||
+            public.build_simple_json_object('metaIdGroupe', r.meta_id_groupe) ||
+            public.build_simple_json_object('metaIdProg', r.meta_id_prog) ||
+            public.build_simple_json_object('inseeReg', r.insee_reg) ||
+            CASE
+                WHEN h.nom != ''
+                    THEN jsonb_build_object('herbier',
+                            jsonb_build_object('nomHerbier', h.nom, 'partHerbier', o.part_herbier1, 'idHerbier', o.id_herbier1))
+                ELSE jsonb_build_object('herbier', null)
+            END ||
+            public.build_simple_json_object('codePerso', r.code_perso) ||
+            public.build_simple_json_object('codeGps', r.code_gps) ||
+            CASE
+                WHEN r.meta_id_prog IS NOT NULL
+                    THEN jsonb_build_object('metaNomProg', p.nom)
+                ELSE '{"metaNomProg": null}'
+            END ||
+            public.build_simple_json_object('metaIdUserSaisie', r.meta_id_user_saisie) ||
+            public.build_simple_json_object('sinpDspublique', r.sinp_dspublique) ||
+            CASE t.tax_type
+                WHEN 'P'::bpchar THEN '{"taxTypeLabel": "Plantes vasculaires"}'::TEXT
+                WHEN 'B'::bpchar THEN '{"taxTypeLabel": "Bryophytes"}'::TEXT
+                WHEN 'L'::bpchar THEN '{"taxTypeLabel": "Lichens"}'::text
+                WHEN 'C'::bpchar THEN '{"taxTypeLabel": "Champignons"}'::TEXT
+                WHEN 'A'::bpchar THEN '{"taxTypeLabel": "Algues"}'::TEXT
+                ELSE '{"taxType": null}'
+            END::jsonb||
+            CASE
+	            	WHEN r.meta_id_user_saisie IN (21, 47, 394, 75, 4, 40,48)
+                        THEN jsonb_build_object('digitisers', json_build_object(
+                            'nom', dig.nom,
+                            'prénom', dig.prenom,
+                            'email', dig.email,
+                            'org', dig.id_org
+                            ))
+                ELSE jsonb_build_object ('digitisers', null)
+            END
+        ) AS additional_fields,
+        r.meta_date_saisie::timestamp AS meta_create_date,
+        GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
+        'I' AS meta_last_action
 
     FROM flore.releve r
         JOIN flore.observation o ON r.id_releve = o.id_releve
