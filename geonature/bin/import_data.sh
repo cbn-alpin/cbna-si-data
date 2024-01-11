@@ -115,6 +115,11 @@ function main() {
     executeUpgradeScript "dataset" "insert"
     executeUpgradeScript "dataset" "update"
 
+    parseCsv "occtax" "oc"
+    executeCopy "occtax"
+    displayStats "occtax"
+    executeUpgradeScript "occtax" "insert"
+
     parseCsv "synthese" "s"
     executeCopy "synthese"
     displayStats "synthese"
