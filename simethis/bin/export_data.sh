@@ -80,6 +80,7 @@ function main() {
     extractCsv "acquisition_framework"
     extractCsv "dataset"
     extractCsv "synthese"
+    extractCsv "occtax"
 
     addMetaArchiveIni
     buildArchive
@@ -121,7 +122,7 @@ function extractCsv() {
     printMsg "Extract CSV file ${csv_file_name}"
 
     local resources_dir="${data_dir}/resources"
-    if [[ "${csv_file_name}" =~ ^(synthese)$ ]]; then
+    if [[ "${csv_file_name}" =~ ^(synthese|occtax)$ ]]; then
         PGPASSWORD="${simethis_db_pass}" $psql_simethis --no-psqlrc \
             --host "${simethis_db_host}" --port "${simethis_db_port}" \
             --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
