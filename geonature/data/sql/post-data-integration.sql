@@ -878,5 +878,24 @@ INSERT INTO gn_commons.cor_module_dataset (
 ON CONFLICT DO NOTHING ;
 
 \echo '----------------------------------------------------------------------------'
+\echo 'Links datasets to module OccHab'
+-- Enables selection of datasets on module Occtax for data entry tests
+-- TODO: Remove this part after CBNA data is integrated into Occtax
+INSERT INTO gn_commons.cor_module_dataset (
+    id_module,
+    id_dataset
+)
+    SELECT
+        gn_commons.get_id_module_bycode('OCCHAB'),
+        d.id_dataset
+    FROM gn_meta.t_datasets AS d
+        JOIN gn_meta.cor_dataset_actor AS cda
+            ON d.id_dataset = cda.id_dataset
+    WHERE d."active" = TRUE
+        AND cda.id_nomenclature_actor_role = ref_nomenclatures.get_id_nomenclature('ROLE_ACTEUR', '6') -- Producteur
+        AND cda.id_organism = utilisateurs.get_id_organism_by_uuid('5a433bd0-1fc0-25d9-e053-2614a8c026f8') -- Conservatoire botanique national alpin;
+ON CONFLICT DO NOTHING ;
+
+\echo '----------------------------------------------------------------------------'
 \echo 'COMMIT if all is ok:'
 COMMIT;
