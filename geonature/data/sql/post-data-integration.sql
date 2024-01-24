@@ -1,6 +1,30 @@
 BEGIN;
 
 \echo '-------------------------------------------------------------------------------'
+\echo 'Preparing permission insertion query'
+
+SELECT
+	CONCAT(
+	    e'(\n',
+		e'\tutilisateurs.get_id_role_by_uuid(''', r.uuid_role,	'''), -- ', r.nom_role, e'\n',
+		e'\tgn_permissions.get_id_action_by_code(''', a.code_action, '''), -- ', a.description_action, e'\n',
+		e'\tgn_commons.get_id_module_bycode(''', m.module_code, '''),', e'\n',
+		e'\tgn_permissions.get_id_object(''', o.code_object, '''),', e'\n',
+		e'\t', COALESCE(p.scope_value::VARCHAR, 'NULL'), e'\n',
+		e'),\n'
+	)
+FROM gn_permissions.t_permissions AS p
+	JOIN gn_permissions.bib_actions AS a
+		ON p.id_action = a.id_action
+	JOIN gn_permissions.t_objects AS o
+		ON p.id_object = o.id_object
+	JOIN gn_commons.t_modules AS m
+		ON p.id_module = m.id_module
+	JOIN utilisateurs.t_roles AS r
+		ON p.id_role = r.id_role
+ORDER BY p.id_role, p.id_module, p.id_action ;
+
+\echo '-------------------------------------------------------------------------------'
 \echo 'Add utility functions for permissions'
 
 CREATE OR REPLACE FUNCTION gn_permissions.get_id_action_by_code(actionCode VARCHAR)
@@ -740,6 +764,9 @@ INSERT INTO gn_permissions.t_permissions (
 ON CONFLICT DO NOTHING ;
 
 \echo '-------------------------------------------------------------------------------'
+\echo 'Finalize integration of users in GN Siflora database'
+
+\echo '-------------------------------------------------------------------------------'
 \echo 'Updating pre-existing users'
 UPDATE utilisateurs.t_roles SET
     id_organisme = utilisateurs.get_id_organism_by_uuid('72520b54-879f-4f7c-b202-7e546319f4ee') -- Réseau des botanistes correspondants du CBNA
@@ -848,10 +875,25 @@ INSERT INTO utilisateurs.cor_roles (
     FROM utilisateurs.t_roles
     WHERE email IS NULL
         AND identifiant IS NULL
-ON CONFLICT DO NOTHING ;
+\echo 'Finalize integration of users in GN Siflora database'
 
 \echo '----------------------------------------------------------------------------'
 \echo 'Links datasets to module Occtax'
+-- Enables selection of datasets on module Occtax for data entry tests
+-- TO DO: Remove this part after CBNA data is integrated into Occtax
+
+INSERT INTO gn_commons.cor_module_dataset (
+	id_module,
+	id_dataset
+)
+	SELECT
+		gn_commons.get_id_module_bycode('OCCTAX'),
+		id_dataset
+	FROM gn_meta.t_datasets
+ON CONFLICT DO NOTHING ;
+
+\echo '----------------------------------------------------------------------------'
+\echo 'Links datasets to module OccHab'
 -- Enables selection of datasets on module Occtax for data entry tests
 -- TODO: Remove this part after CBNA data is integrated into Occtax
 INSERT INTO gn_commons.cor_module_dataset (
@@ -859,7 +901,7 @@ INSERT INTO gn_commons.cor_module_dataset (
     id_dataset
 )
     SELECT
-        gn_commons.get_id_module_bycode('OCCTAX'),
+        gn_commons.get_id_module_bycode('OCCHAB'),
         d.id_dataset
     FROM gn_meta.t_datasets AS d
         JOIN gn_meta.cor_dataset_actor AS cda
