@@ -169,8 +169,6 @@ COPY (
         rm.lib AS grp_method,
         r.date_releve_deb::timestamp AS date_min,
         r.date_releve_fin::timestamp AS date_max,
-        NULL AS hour_min,
-        NULL AS hour_max,
         hr.cd_hab AS cd_hab,
         LEAST(NULLIF(r.alti_inf, 0) , r.alti_calc) AS altitude_min,
         GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
