@@ -268,7 +268,11 @@ COPY (
             ELSE ''
         END AS nom_cite,
         'Taxref v16.0' AS meta_v_taxref,
-        NULL AS digital_proof,
+        CASE
+            WHEN o.meta_url LIKE 'http%'
+                THEN o.meta_url
+            ELSE NULL
+        END AS digital_proof,
         NULL AS non_digital_proof,
         public.delete_space(o.comm_taxon) AS comment_description,
 
