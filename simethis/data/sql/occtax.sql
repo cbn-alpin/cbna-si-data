@@ -174,7 +174,7 @@ COPY (
         GREATEST(NULLIF(r.alti_sup, 0), r.alti_calc) AS altitude_max,
         NULL AS depth_min,
         NULL AS depth_max,
-        r.lieudit AS place_name,
+        public.delete_space(r.lieudit) AS place_name,
         NULL AS meta_device_entry,
         public.delete_space(r.comm_loc) AS comment_context,
         st_geomfromewkt(
@@ -356,6 +356,7 @@ COPY (
         LEFT JOIN referentiels.habref hr ON hr.cd_hab = ee.cd_hab_eunis
     WHERE
         r.id_org_f = 2785 -- CBNA
+    LIMIT 100
 
 ) TO '/tmp/occtax.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
