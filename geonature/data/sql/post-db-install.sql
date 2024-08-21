@@ -24,6 +24,12 @@ WHERE id_role = 2 AND groupe = TRUE;
 
 \echo '-------------------------------------------------------------------------------'
 \echo 'Suppression des utilisateurs exemples inutiles'
+DELETE FROM utilisateurs.cor_role_liste crl
+USING utilisateurs.t_roles tr
+WHERE (crl.id_role = 4 AND tr.identifiant = 'agent')
+    OR (crl.id_role = 6 AND tr.identifiant = 'pierre.paul')
+    OR (crl.id_role = 7 AND tr.identifiant = 'validateur');
+
 DELETE FROM utilisateurs.t_roles
 WHERE (id_role = 4 AND identifiant = 'agent')
     OR (id_role = 6 AND identifiant = 'pierre.paul')
