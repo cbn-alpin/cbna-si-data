@@ -34,20 +34,27 @@ function parseScriptOptions() {
             "--verbose") set -- "${@}" "-v" ;;
             "--debug") set -- "${@}" "-x" ;;
             "--config") set -- "${@}" "--command" ;;
+            "--blur") set -- "${@}" "-b" ;;
             "--"*) exitScript "ERROR : parameter '${arg}' invalid ! Use --host option to know more." 1 ;;
             *) set -- "${@}" "${arg}"
         esac
     done
 
-    while getopts "hvxc:" option; do
+    while getopts "hvxc:b" option; do
         case "${option}" in
             "h") printScriptUsage ;;
             "v") readonly verbose=true ;;
             "x") readonly debug=true; set -x ;;
             "c") setting_file_path="${OPTARG}" ;;
+            "b") blur=true ;;
             *) exitScript "ERROR : parameter invalid ! Use --host option to know more." 1 ;;
         esac
     done
+
+    #check if option blur is set
+    if [ -z ${blur+x} ]; then blur=false ; printMsg "blur is set to '$blur'" ;
+    else printMsg "blur is set to '$blur'";
+    fi
 }
 
 # DESC: Main control flow
@@ -72,6 +79,7 @@ function main() {
 
     createPgToolsAlias
     precheck
+    enableBlurring "${blur}"
     extractCsv "taxref_rank"
     extractCsv "taxref"
     extractCsv "source"
@@ -116,6 +124,19 @@ function precheck() {
         printVerbose "Found directory '${simethis_csv_folder}': ${Gre-}OK" ${Gra-}
     fi
 }
+
+function enableBlurring() {
+    #if paramter "blur" is true then use correct blur_geom function
+    if [[ "${blur}" = true ]]; then blur_geom_function_path="${sql_dir}/blur_geom.sql"
+    else blur_geom_function_path="${sql_dir}/blur_geom_fake.sql"
+    fi
+
+    PGPASSWORD="${simethis_db_pass}" $psql_simethis --no-psqlrc \
+        --host "${simethis_db_host}" --port "${simethis_db_port}" \
+        --username "${simethis_db_user}" --dbname "${simethis_db_name}" \
+        --file "${blur_geom_function_path}"
+}
+
 
 function extractCsv() {
     local csv_file_name="${1,,}"

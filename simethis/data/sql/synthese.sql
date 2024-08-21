@@ -322,9 +322,27 @@ COPY (
         st_geomfromewkt(
             CASE
                 WHEN r.id_precision = 'P' -- P : Pointage précis
-                    THEN st_asewkt(coalesce(st_transform(r.geom_pres_4326, 2154), r.geom_2154))
+                    THEN st_asewkt(
+                            coalesce(
+                                st_transform(
+                                    flore.blur_geom(r.geom_pres_4326, o.id_observation, COALESCE(se.cd_ref, sed.cd_ref)),
+                                    2154
+                                    ),
+                                flore.blur_geom(r.geom_2154, o.id_observation, COALESCE(se.cd_ref, sed.cd_ref))
+                                )
+                            )
                 WHEN r.id_precision = ANY (ARRAY['T', 'A', 'C']) -- T : Pointage approximatif, A : Précision inconnue, C : Commune
-                    THEN st_asewkt(coalesce(r.geom_2154, st_centroid(st_transform(r.geom_prosp_4326, 2154))))
+                    THEN st_asewkt(
+                            coalesce(
+                                flore.blur_geom(r.geom_2154, o.id_observation, COALESCE(se.cd_ref, sed.cd_ref)),
+                                st_centroid(
+                                    st_transform(
+                                        flore.blur_geom(r.geom_prosp_4326, o.id_observation, COALESCE(se.cd_ref, sed.cd_ref)),
+                                        2154
+                                        )
+                                    )
+                                )
+                            )
                 ELSE NULL
             END
         ) AS geom,
