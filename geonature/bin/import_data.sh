@@ -161,8 +161,8 @@ function downloadDataArchive() {
     printMsg "Downloading ${app_code^^} data archive..."
 
     if [[ ! -f "${raw_dir}/${cbna_filename_archive}" ]]; then
-        downloadSftp "${sftp_user}" "${sftp_pwd}" \
-            "${sftp_host}" "${sftp_port}" \
+        downloadSftp "${simethis_sftp_download_user}" "${simethis_sftp_download_pwd}" \
+            "${simethis_sftp_download_host}" "${simethis_sftp_download_port}" \
             "/${cbna_archive_path}/${cbna_filename_archive}" "${raw_dir}/${cbna_filename_archive}"
      else
         printVerbose "Archive file \"${cbna_filename_archive}\" already downloaded." ${Gra}
