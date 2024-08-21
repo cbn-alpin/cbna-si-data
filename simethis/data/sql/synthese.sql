@@ -396,7 +396,7 @@ COPY (
             nullif(trim(o.comm_validation), ''),
             nullif(trim(v.comm_analyse), '')
         ) AS validation_comment,
-        coalesce(o.meta_date_valid, v.date_prevalid, o.meta_date_maj)::timestamp AS validation_date,
+        coalesce(o.meta_date_valid, o.meta_date_maj)::timestamp AS validation_date,
         flore.generate_observers(r.id_releve, ', ') AS observers,
         concat(
             CASE
@@ -509,10 +509,11 @@ COPY (
         LEFT JOIN flore.validation AS v
             ON v.id_observation = o.id_observation
     WHERE (
-        r.meta_id_groupe = 1
+        r.meta_id_groupe = 1 AND r.id_precision != 'N' -- non localisable
         OR  (
             r.meta_id_groupe <> 1
             AND r.insee_dept IN ('04', '05', '01', '26', '38', '73', '74')
+            AND r.id_precision != 'N'
         )
     )
 ) TO '/tmp/synthese.csv'
