@@ -274,10 +274,7 @@ COPY (
         END AS digital_proof,
         NULL AS non_digital_proof,
         public.delete_space(o.comm_taxon) AS comment_description,
-
         -- cor_counting_occtax
-
-        o.id_observation_sinp AS unique_id_sinp_occtax,
         '0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
         CASE
             WHEN o.sexe = 'M'::bpchar THEN '3'::TEXT -- 3 : Mâle
