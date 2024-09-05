@@ -165,6 +165,7 @@ COPY (
         mj.lib_jdd_court::varchar(255) AS code_dataset,
         dig.permid::varchar(50) AS code_digitiser,
         flore.generate_observers(r.id_releve, ', '::character varying) AS observers,
+        'Non renseigné' AS code_nomenclature_tech_collect_campanule
         'REL'::text AS code_nomenclature_grp_typ, -- Relevé (qu'il soit phytosociologique, d'observation, ou autre...)
         rm.lib AS grp_method,
         r.date_releve_deb::timestamp AS date_min,
@@ -356,7 +357,7 @@ COPY (
         LEFT JOIN referentiels.habref hr ON hr.cd_hab = ee.cd_hab_eunis
     WHERE
         r.id_org_f = 2785 -- CBNA
-    LIMIT 100
+
 
 ) TO '/tmp/occtax.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
