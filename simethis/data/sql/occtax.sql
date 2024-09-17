@@ -165,7 +165,7 @@ COPY (
         mj.lib_jdd_court::varchar(255) AS code_dataset,
         dig.permid::varchar(50) AS code_digitiser,
         flore.generate_observers(r.id_releve, ', '::character varying) AS observers,
-        'Non renseigné' AS code_nomenclature_tech_collect_campanule
+        'Non renseigné' AS code_nomenclature_tech_collect_campanule,
         'REL'::text AS code_nomenclature_grp_typ, -- Relevé (qu'il soit phytosociologique, d'observation, ou autre...)
         rm.lib AS grp_method,
         r.date_releve_deb::timestamp AS date_min,
@@ -267,6 +267,7 @@ COPY (
             ELSE ''
         END AS nom_cite,
         'Taxref v16.0' AS meta_v_taxref,
+        NULL AS sample_number_proof,
         CASE
             WHEN o.meta_url LIKE 'http%'
                 THEN o.meta_url
