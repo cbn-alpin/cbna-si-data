@@ -165,7 +165,7 @@ COPY (
         mj.lib_jdd_court::varchar(255) AS code_dataset,
         dig.permid::varchar(50) AS code_digitiser,
         flore.generate_observers(r.id_releve, ', '::character varying) AS observers,
-        'Non renseigné' AS code_nomenclature_tech_collect_campanule,
+        '133' AS code_nomenclature_tech_collect_campanule,
         'REL'::text AS code_nomenclature_grp_typ, -- Relevé (qu'il soit phytosociologique, d'observation, ou autre...)
         rm.lib AS grp_method,
         r.date_releve_deb::timestamp AS date_min,
@@ -332,6 +332,7 @@ COPY (
                 ELSE jsonb_build_object ('digitisers', null)
             END
         ) AS additional_fields,
+        'OCCTAX' AS code_module,
         r.meta_date_saisie::timestamp AS meta_create_date,
         GREATEST(o.meta_date_maj, r.meta_date_maj)::timestamp AS meta_update_date,
         'I' AS meta_last_action
