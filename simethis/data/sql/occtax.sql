@@ -275,7 +275,9 @@ COPY (
         END AS digital_proof,
         NULL AS non_digital_proof,
         public.delete_space(o.comm_taxon) AS comment_description,
+
         -- cor_counting_occtax
+        NULL AS unique_id_sinp_occtax,
         '0'::text AS code_nomenclature_life_stage, -- 0 : Inconnu
         CASE
             WHEN o.sexe = 'M'::bpchar THEN '3'::TEXT -- 3 : Mâle
@@ -356,6 +358,7 @@ COPY (
         LEFT JOIN referentiels.habref hr ON hr.cd_hab = ee.cd_hab_eunis
     WHERE
         r.id_org_f = 2785 -- CBNA
+    LIMIT 100
 
 
 ) TO '/tmp/occtax.csv'
