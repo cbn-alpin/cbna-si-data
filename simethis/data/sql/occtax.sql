@@ -357,9 +357,8 @@ COPY (
         LEFT JOIN referentiels.ecologie_eunis ee ON ee.cd_ref = o.cd_ref
         LEFT JOIN referentiels.habref hr ON hr.cd_hab = ee.cd_hab_eunis
     WHERE
-        r.id_org_f = 2785 -- CBNA
-    LIMIT 100
-
+        r.id_org_f = 2785 -- agents du CBNA
+        AND r.meta_id_groupe = 1 -- données du CBNA dans Simethis
 
 ) TO '/tmp/occtax.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
