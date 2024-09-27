@@ -52,8 +52,9 @@ function parseScriptOptions() {
     done
 
     #check if option blur is set
-    if [ -z ${blur+x} ];
-        then blur=false ; printMsg "blur is set to '$blur'" ;
+    if [ -z ${blur+x} ]; then
+        blur=false ;
+        printMsg "blur is set to '$blur'" ;
     else
         printMsg "blur is set to '$blur'";
     fi
@@ -128,9 +129,9 @@ function precheck() {
 }
 
 function enableBlurring() {
-    #if paramter "blur" is true then use correct blur_geom function
-    if [[ "${blur}" = true ]];
-        then blur_geom_function_path="${sql_dir}/blur_geom.sql"
+    #if paramater "blur" is true then use correct blur_geom function
+    if [[ "${blur}" = true ]]; then
+        blur_geom_function_path="${sql_dir}/blur_geom.sql"
     else
         blur_geom_function_path="${sql_dir}/blur_geom_fake.sql"
     fi
