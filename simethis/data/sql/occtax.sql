@@ -157,7 +157,7 @@ WHERE u.id_groupe = 1
 
 -- Requête occtax
 COPY (
-    SELECT DISTINCT ON (unique_id_sinp_grp)
+    SELECT DISTINCT ON (unique_id_occurrence_occtax)
 
     -- t_releves_occtax
 
