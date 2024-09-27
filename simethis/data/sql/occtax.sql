@@ -359,6 +359,7 @@ COPY (
     WHERE
         r.id_org_f = 2785 -- agents du CBNA
         AND r.meta_id_groupe = 1 -- données du CBNA dans Simethis
+        AND r.id_precision != 'N'
 
 ) TO '/tmp/occtax.csv'
 WITH(format csv, header, delimiter E'\t', null '\N');
