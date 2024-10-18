@@ -12,7 +12,13 @@ AS $function$
                 WHEN cdSensitivity IS NOT NULL THEN
                 	CASE
 	                	WHEN s.geom_maille10_4326 IS NOT NULL THEN s.geom_maille10_4326
-	                	ELSE (SELECT mi.geom_4326 FROM flore.releve r JOIN referentiels.maille_inpn_10 mi ON mi.geom_4326 && r.geom_4326)
+	                	ELSE (
+                            SELECT mi.geom_4326
+                            FROM flore.releve r
+                                JOIN referentiels.maille_inpn_10 mi
+                                    ON mi.geom_4326 && r.geom_4326
+                            LIMIT 1
+                            )
                         END
                     ELSE r.geom_4326
                 END
