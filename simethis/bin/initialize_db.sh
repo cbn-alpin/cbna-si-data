@@ -156,7 +156,8 @@ function createUsers() {
 
     local simethis_db_users=( \
         "si_user" "cbnmed_user" "cbnmed_admin" "cbna_user" "cbnc_user" "cbnc_admin" "cbna_admin" \
-        "d.rougie" "coadmin_cbn" \
+        "d.rougie" "coadmin_cbn" "simethis_admin" "qgis" "user_w" "pnpc_admin" "g.debarros" \
+        "user_sig" "o.gavotto"\
     )
     for user in "${simethis_db_users[@]}"; do
         createUser "${user}"
