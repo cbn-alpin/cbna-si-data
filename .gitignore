@@ -7,3 +7,4 @@ settings.ini
 *.log
 *.tmp.sql
 gn2pg/config/*_config.toml
+gefiproj/data/sql/*.csv

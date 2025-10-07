@@ -13,3 +13,7 @@ max_line_length = 110
 [*.md]
 trim_trailing_whitespace = false
 max_line_length = 110
+
+[*.yml]
+indent_style = space
+indent_size = 2
